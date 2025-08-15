@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:task_mate/my_tasks.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,7 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Replace with your credentials
   final String googleClientId =
-      "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"; // From Google Cloud Console
+      "521153989375-gdn6vqoae5dsurri124fn3ks9otomef4.apps.googleusercontent.com"; // From Google Cloud Console
   final String microsoftClientId =
       "YOUR_MICROSOFT_CLIENT_ID"; // From Azure App Registration
 
@@ -22,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
           googleClientId,
-          "com.example.app:/oauth2redirect", // match with Google console
+          "com.example.task_mate:/oauth2redirect", // match with Google console
           discoveryUrl:
               "https://accounts.google.com/.well-known/openid-configuration",
           scopes: ["openid", "email", "profile"],
@@ -30,6 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (result != null) {
         _showMessage("Google Sign-In Success\nID Token: ${result.idToken}");
+        if (!mounted) return; // Check if widget is still mounted
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => TaskListScreen()),
+        );
       }
     } catch (e) {
       _showMessage("Google Sign-In Error: $e");

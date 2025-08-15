@@ -7,7 +7,10 @@ allprojects {
 
 rootProject.buildDir = "../build"
 subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    // Only override buildDir for projects in the root directory
+    if (project.projectDir.parentFile == rootProject.projectDir) {
+        project.buildDir = "${rootProject.buildDir}/${project.name}"
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")
