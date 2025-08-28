@@ -16,7 +16,7 @@ class Task {
 
 class TaskListScreen extends StatefulWidget {
 
-  TaskListScreen({super.key});
+  const TaskListScreen({super.key});
 
   @override
   State<TaskListScreen> createState() => _TaskListScreenState();

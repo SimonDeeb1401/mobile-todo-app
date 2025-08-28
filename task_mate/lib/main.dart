@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'my_tasks.dart';
-import 'login_screen.dart';
+import 'screens/tasks_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MainApp());
