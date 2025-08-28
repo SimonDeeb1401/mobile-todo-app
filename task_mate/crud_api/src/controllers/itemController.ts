@@ -1,35 +1,54 @@
 import type { Request, Response } from "express";
 import Item from "../models/Item.js";
+import type { IItem } from "../models/Item.js";
+import type { AuthRequest } from "../middleware/authMiddleware.js";
 
-export const createItem = async (req: Request, res: Response) => {
+// CREATE item for logged-in user
+export const createItem = async (req: AuthRequest, res: Response) => {
   try {
-    const item = new Item(req.body);
+    const { title, description } = req.body;
+    const item = new Item({ title, description, user: req.user!.id });
     await item.save();
     res.status(201).json(item);
   } catch (err) {
-    res.status(400).json({ message: err });
+    res.status(500).json({ error: "Failed to create item" });
   }
 };
 
-export const getItems = async (_req: Request, res: Response) => {
-  const items = await Item.find();
-  res.json(items);
-};
-
-export const updateItem = async (req: Request, res: Response) => {
+// GET all items for the logged-in user
+export const getItems = async (req: AuthRequest, res: Response) => {
   try {
-    const updated = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+    const items = await Item.find({ user: req.user!.id });
+    res.json(items);
   } catch (err) {
-    res.status(400).json({ message: err });
+    res.status(500).json({ error: "Failed to fetch items" });
   }
 };
 
-export const deleteItem = async (req: Request, res: Response) => {
+// UPDATE item (only if it belongs to the logged-in user)
+export const updateItem = async (req: AuthRequest, res: Response) => {
   try {
-    await Item.findByIdAndDelete(req.params.id);
-    res.sendStatus(204);
+    const { id } = req.params;
+    const item = await Item.findOneAndUpdate(
+      { _id: id, user: req.user!.id }, // only allow own items
+      req.body,
+      { new: true }
+    );
+    if (!item) return res.status(404).json({ error: "Item not found" });
+    res.json(item);
   } catch (err) {
-    res.status(400).json({ message: err });
+    res.status(500).json({ error: "Failed to update item" });
+  }
+};
+
+// DELETE item (only if it belongs to the logged-in user)
+export const deleteItem = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const item = await Item.findOneAndDelete({ _id: id, user: req.user!.id });
+    if (!item) return res.status(404).json({ error: "Item not found" });
+    res.json({ message: "Item deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete item" });
   }
 };

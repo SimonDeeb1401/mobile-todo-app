@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { createItem, getItems, updateItem, deleteItem } from "../controllers/itemController.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.post("/", createItem);
-router.get("/", getItems);
-router.put("/:id", updateItem);
-router.delete("/:id", deleteItem);
+router.post("/", verifyToken, createItem);
+router.get("/", verifyToken, getItems);
+router.put("/:id", verifyToken, updateItem);
+router.delete("/:id", verifyToken, deleteItem);
 
 export default router;

@@ -1,8 +1,15 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
-const itemSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  quantity: { type: Number, default: 0 }
-}, { timestamps: true });
+export interface IItem extends Document {
+  title: string;
+  description?: string;
+  user: mongoose.Types.ObjectId;
+}
 
-export default mongoose.model("Item", itemSchema);
+const itemSchema: Schema = new Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+});
+
+export default mongoose.model<IItem>("Item", itemSchema);
