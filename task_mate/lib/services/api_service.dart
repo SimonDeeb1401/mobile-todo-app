@@ -1,30 +1,56 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final storage = FlutterSecureStorage();
-const String baseUrl = "http://localhost:5000/api";
+
+// Use different URLs for different platforms
+String get baseUrl {
+  if (Platform.isAndroid) {
+    // For Android emulator, use 10.0.2.2 to access host machine
+    // For physical device, use your actual IP address
+    return "http://10.0.0.9:5000/api"; // Change to 10.0.0.9 if using physical device
+  } else if (Platform.isIOS) {
+    // For iOS simulator, localhost should work
+    return "http://localhost:5000/api";
+  }
+  // Default fallback
+  return "http://10.0.0.9:5000/api";
+}
 
 class ApiService {
   // Signup
   static Future<bool> signup(String email, String password) async {
-    final res = await http.post(Uri.parse("$baseUrl/auth/signup"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}));
-    return res.statusCode == 201;
+    try {
+      final res = await http.post(Uri.parse("$baseUrl/auth/signup"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({"email": email, "password": password}));
+      return res.statusCode == 201;
+    } catch (e) {
+      print("Signup error: $e");
+      print("Trying to connect to: $baseUrl/auth/signup");
+      return false;
+    }
   }
 
   // Login
   static Future<bool> login(String email, String password) async {
-    final res = await http.post(Uri.parse("$baseUrl/auth/login"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}));
-    if (res.statusCode == 200) {
-      final token = jsonDecode(res.body)["token"];
-      await storage.write(key: "jwt", value: token);
-      return true;
+    try {
+      final res = await http.post(Uri.parse("$baseUrl/auth/login"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({"email": email, "password": password}));
+      if (res.statusCode == 200) {
+        final token = jsonDecode(res.body)["token"];
+        await storage.write(key: "jwt", value: token);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("Login error: $e");
+      print("Trying to connect to: $baseUrl/auth/login");
+      return false;
     }
-    return false;
   }
 
   // Get user items

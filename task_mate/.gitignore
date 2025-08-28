@@ -44,4 +44,5 @@ app.*.map.json
 
 # Other
 /crud_api/node_modules/
+/crud_api/dist/
 /crud_api/.env
