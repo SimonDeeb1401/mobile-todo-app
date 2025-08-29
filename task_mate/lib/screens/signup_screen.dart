@@ -33,6 +33,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: ValueKey('signup_screen_v2'), // This forces rebuild on hot reload
       backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Center(

@@ -29,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: ValueKey('login_screen_v2'), // This forces rebuild on hot reload
       backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Center(

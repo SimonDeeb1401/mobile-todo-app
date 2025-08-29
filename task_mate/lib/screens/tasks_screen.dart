@@ -70,7 +70,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 );
                 });
               },
-              activeColor: Colors.green,
               ),
               title: Text(task.title),
               subtitle: Column(
@@ -80,12 +79,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 const SizedBox(height: 4),
                 Text(
                 'Deadline: ${task.deadline.toLocal().toString().split(' ')[0]}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
               ),
               trailing: task.isCompleted
-                ? const Icon(Icons.done, color: Colors.green)
+                ? Icon(Icons.done, color: Theme.of(context).primaryColor)
                 : null,
             ),
             );
