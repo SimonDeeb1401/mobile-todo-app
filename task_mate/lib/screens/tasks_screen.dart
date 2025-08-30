@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'add_task.dart';
-
-class Task {
-  final String title;
-  final String description;
-  final DateTime deadline;
-  final bool isCompleted;
-
-  Task({
-    required this.title,
-    required this.description,
-    required this.deadline,
-    required this.isCompleted,
-  });
-}
+import '../services/api_service.dart';
 
 class TaskListScreen extends StatefulWidget {
 
@@ -24,27 +11,18 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
-  final List<Task> tasks = [
-    Task(
-      title: 'Buy groceries',
-      description: 'Milk, Bread, Eggs, Fruits',
-      deadline: DateTime.now().add(Duration(days: 1)),
-      isCompleted: false,
-    ),
-    Task(
-      title: 'Finish project',
-      description: 'Complete the Flutter UI for the todo app',
-      deadline: DateTime.now().add(Duration(days: 2)),
-      isCompleted: true,
-    ),
-    Task(
-      title: 'Call Mom',
-      description: 'Discuss weekend plans',
-      deadline: DateTime.now().add(Duration(days: 3)),
-      isCompleted: false,
-    ),
-    // Add more tasks as needed
-  ];
+  List tasks = [];
+  
+  void fetchTasks() async {
+    final data = await ApiService.getItems();
+    setState(() => tasks = data);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasks();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,31 +38,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: ListTile(
               leading: Checkbox(
-              value: task.isCompleted,
+              value: task['completed'] ?? false,
               onChanged: (value) {
                 setState(() {
-                tasks[index] = Task(
-                  title: task.title,
-                  description: task.description,
-                  deadline: task.deadline,
-                  isCompleted: value ?? false,
-                );
+                task['completed'] = value ?? false;
                 });
               },
               ),
-              title: Text(task.title),
+              title: Text(task['title'] ?? ''),
               subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(task.description),
+                Text(task['description'] ?? ''),
+                const SizedBox(height: 4),
+                Text('Priority: ${task['priority'] ?? ''}'),
                 const SizedBox(height: 4),
                 Text(
-                'Deadline: ${task.deadline.toLocal().toString().split(' ')[0]}',
+                'Deadline: ${task['deadline'] != null ? DateTime.parse(task['deadline']).toLocal().toString().split(' ')[0] : 'N/A'}',
                 style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
               ),
-              trailing: task.isCompleted
+              trailing: (task['completed'] ?? false)
                 ? Icon(Icons.done, color: Theme.of(context).primaryColor)
                 : null,
             ),

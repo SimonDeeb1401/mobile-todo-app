@@ -324,7 +324,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingMedium),
           decoration: AppDecorations.inputFieldDecoration,
           child: DropdownButtonFormField<String>(
-            value: _selectedPriority,
+            initialValue: _selectedPriority,
             decoration: InputDecoration(
               border: InputBorder.none,
               prefixIcon: Icon(
