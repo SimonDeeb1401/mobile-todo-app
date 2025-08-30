@@ -8,17 +8,28 @@ export interface AuthRequest extends Request {
 }
 
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+  console.log("Auth middleware called");
+  console.log("Authorization header:", req.headers.authorization);
+  
   const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ error: "No token provided" });
+  if (!authHeader) {
+    console.log("No authorization header found");
+    return res.status(401).json({ error: "No token provided" });
+  }
 
   const token = authHeader.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Invalid token" });
+  if (!token) {
+    console.log("No token in authorization header");
+    return res.status(401).json({ error: "Invalid token" });
+  }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
+    console.log("Token decoded successfully:", decoded);
     req.user = decoded;
     next();
-  } catch {
+  } catch (err) {
+    console.log("Token verification failed:", err);
     res.status(401).json({ error: "Invalid token" });
   }
 };

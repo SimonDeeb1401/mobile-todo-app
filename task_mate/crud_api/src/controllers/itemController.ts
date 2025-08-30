@@ -6,12 +6,31 @@ import type { AuthRequest } from "../middleware/authMiddleware.js";
 // CREATE item for logged-in user
 export const createItem = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description } = req.body;
-    const item = new Item({ title, description, user: req.user!.id });
+    console.log("Creating item with data:", req.body);
+    console.log("Step 1: About to log user ID");
+    
+    console.log("User ID:", req.user?.id);
+    console.log("Step 2: User ID logged successfully");
+    
+    console.log("Step 3: About to destructure req.body");
+    const { title, description, priority, deadline, completed } = req.body;
+    console.log("Step 4: Destructured values:", { title, description, priority, deadline, completed });
+    
+    console.log("Step 5: About to create Item instance");
+    const item = new Item({ title, description, priority, deadline, completed, user: req.user!.id });
+    console.log("Step 6: Item instance created");
+    
+    console.log("Item to be saved:", item);
+    console.log("Step 7: About to save item");
+    
     await item.save();
+    console.log("Step 8: Item saved successfully:", item);
+    
     res.status(201).json(item);
   } catch (err) {
-    res.status(500).json({ error: "Failed to create item" });
+    console.error("Error creating item:", err);
+    console.error("Error details:", JSON.stringify(err, null, 2));
+    res.status(500).json({ error: "Failed to create item", details: err instanceof Error ? err.message : String(err) });
   }
 };
 

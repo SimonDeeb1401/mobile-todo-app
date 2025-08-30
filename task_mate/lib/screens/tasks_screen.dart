@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'add_task.dart';
 
 class Task {
   final String title;
@@ -92,7 +93,18 @@ class _TaskListScreenState extends State<TaskListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Implement add new task functionality
+          // Handle adding a new task
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddTaskScreen(),
+            ),
+          ).then((result) {
+            if (result == true) {
+              // Refresh the task list if a new task was added
+              setState(() {});
+            }
+          });
         },
         child: const Icon(Icons.add),
       ),

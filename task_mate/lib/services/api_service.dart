@@ -66,11 +66,30 @@ class ApiService {
   }
 
   // Add an item
-  static Future<bool> createItem(String title) async {
-    final token = await storage.read(key: "jwt");
-    final res = await http.post(Uri.parse("$baseUrl/items"),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
-        body: jsonEncode({"title": title}));
-    return res.statusCode == 201;
+  static Future<bool> createItem(String title, String description, String priority, DateTime deadline, bool completed) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      print("Token: $token");
+      print("Creating item with URL: $baseUrl/items");
+      
+      final res = await http.post(Uri.parse("$baseUrl/items"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({
+            "title": title, 
+            "description": description, 
+            "priority": priority, 
+            "deadline": deadline.toIso8601String(), 
+            "completed": completed
+          }));
+      
+      print("Response status code: ${res.statusCode}");
+      print("Response body: ${res.body}");
+      
+      return res.statusCode == 201;
+    } catch (e) {
+      print("CreateItem error: $e");
+      print("Trying to connect to: $baseUrl/items");
+      return false;
+    }
   }
 }
