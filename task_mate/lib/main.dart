@@ -177,17 +177,17 @@ class MainApp extends StatelessWidget {
         
         // Checkbox and Switch themes
         checkboxTheme: CheckboxThemeData(
-          fillColor: MaterialStateProperty.all(Colors.red),
-          checkColor: MaterialStateProperty.all(Colors.white),
+          fillColor: WidgetStateProperty.all(Colors.red),
+          checkColor: WidgetStateProperty.all(Colors.white),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
         ),
         
         switchTheme: SwitchThemeData(
-          thumbColor: MaterialStateProperty.all(Colors.white),
-          trackColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) {
+          thumbColor: WidgetStateProperty.all(Colors.white),
+          trackColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
               return Colors.red.withOpacity(0.5);
             }
             return Colors.grey.withOpacity(0.3);
