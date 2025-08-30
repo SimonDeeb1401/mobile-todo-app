@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
+import 'providers/task_provider.dart';
 
 void main() {
   runApp(const MainApp());
@@ -10,7 +12,9 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return ChangeNotifierProvider(
+      create: (context) => TaskProvider(),
+      child: MaterialApp(
       title: 'Task Mate',
       theme: ThemeData(
         // Primary color scheme
@@ -216,6 +220,7 @@ class MainApp extends StatelessWidget {
         ),
       ),
       home: LoginScreen(),
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
-import '../services/api_service.dart';
+import '../providers/task_provider.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -63,12 +64,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     });
 
     try {
-      final success = await ApiService.createItem(
-        _titleController.text.trim(),
-        _descriptionController.text.trim(),
-        _selectedPriority.toLowerCase(),
-        _selectedDeadline ?? DateTime.now().add(const Duration(days: 7)), // Default to 7 days if no deadline
-        false, // New tasks are not completed by default
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      final success = await taskProvider.addTask(
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        priority: _selectedPriority.toLowerCase(),
+        deadline: _selectedDeadline ?? DateTime.now().add(const Duration(days: 7)), // Default to 7 days if no deadline
+        completed: false, // New tasks are not completed by default
       );
       
       if (success) {
