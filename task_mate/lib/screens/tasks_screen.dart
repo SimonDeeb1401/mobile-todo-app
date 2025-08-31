@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'add_task.dart';
 import '../providers/task_provider.dart';
+import 'edit_tasks.dart';
 
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
@@ -66,9 +67,27 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                   ),
                                 ],
                               ),
-                              trailing: (task['completed'] ?? false)
-                                  ? Icon(Icons.done, color: Theme.of(context).primaryColor)
-                                  : null,
+                              // trailing: (task['completed'] ?? false)
+                              //     ? Icon(Icons.done, color: Theme.of(context).primaryColor)
+                              //     : null,
+                              trailing: IconButton(
+                                onPressed: () {
+                                  // Navigate to EditTaskScreen
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditTaskScreen(
+                                        taskId: task['_id'],
+                                        taskTitle: task['title'],
+                                        taskDescription: task['description'],
+                                        taskDeadline: DateTime.parse(task['deadline']),
+                                        taskPriority: task['priority'],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.edit),
+                              ),
                             ),
                           );
                         },

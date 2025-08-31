@@ -92,4 +92,24 @@ class ApiService {
       return false;
     }
   }
+
+  /// Update an existing item
+  static Future<bool> updateItem(String id, String title, String description, String priority, DateTime? deadline) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.put(Uri.parse("$baseUrl/items/$id"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({
+            "title": title,
+            "description": description,
+            "priority": priority,
+            "deadline": deadline?.toIso8601String(),
+          }));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("UpdateItem error: $e");
+      print("Trying to connect to: $baseUrl/items/$id");
+      return false;
+    }
+  }
 }

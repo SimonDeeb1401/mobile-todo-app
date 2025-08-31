@@ -66,4 +66,35 @@ class TaskProvider extends ChangeNotifier {
       // TODO: Update on server as well if you have an update API endpoint
     }
   }
+
+  /// Edit an existing task
+  Future<bool> editTask({
+    required String taskId,
+    required String title,
+    required String description,
+    required DateTime? deadline,
+    required String priority,
+  }) async {
+    try {
+      final success = await ApiService.updateItem(
+        taskId,
+        title,
+        description,
+        priority,
+        deadline,
+      );
+
+      if (success) {
+        // Refresh the task list to include the updated task
+        await fetchTasks();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error editing task: $e');
+      }
+      return false;
+    }
+  }
 }
