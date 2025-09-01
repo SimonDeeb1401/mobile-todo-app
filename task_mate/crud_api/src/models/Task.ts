@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IItem extends Document {
+export interface ITask extends Document {
   title: string;
   description?: string;
   priority: "low" | "medium" | "high";
@@ -9,7 +9,7 @@ export interface IItem extends Document {
   user: mongoose.Types.ObjectId;
 }
 
-const itemSchema: Schema = new Schema({
+const taskSchema: Schema = new Schema({
   title: { type: String, required: true },
   description: { type: String },
   priority: { type: String, enum: ["low", "medium", "high"], default: "medium" },
@@ -18,4 +18,4 @@ const itemSchema: Schema = new Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
 });
 
-export default mongoose.model<IItem>("Item", itemSchema);
+export default mongoose.model<ITask>("Task", taskSchema);

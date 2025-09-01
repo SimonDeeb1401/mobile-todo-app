@@ -53,26 +53,26 @@ class ApiService {
     }
   }
 
-  // Get user items
-  static Future<List<dynamic>> getItems() async {
+  // Get user tasks
+  static Future<List<dynamic>> getTasks() async {
     final token = await storage.read(key: "jwt");
-    final res = await http.get(Uri.parse("$baseUrl/items"),
+    final res = await http.get(Uri.parse("$baseUrl/tasks"),
         headers: {"Authorization": "Bearer $token"});
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     } else {
-      throw Exception("Failed to fetch items");
+      throw Exception("Failed to fetch tasks");
     }
   }
 
-  // Add an item
-  static Future<bool> createItem(String title, String description, String priority, DateTime deadline, bool completed) async {
+  // Add a task
+  static Future<bool> createTask(String title, String description, String priority, DateTime deadline, bool completed) async {
     try {
       final token = await storage.read(key: "jwt");
       print("Token: $token");
-      print("Creating item with URL: $baseUrl/items");
+      print("Creating task with URL: $baseUrl/tasks");
       
-      final res = await http.post(Uri.parse("$baseUrl/items"),
+      final res = await http.post(Uri.parse("$baseUrl/tasks"),
           headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
           body: jsonEncode({
             "title": title, 
@@ -87,17 +87,17 @@ class ApiService {
       
       return res.statusCode == 201;
     } catch (e) {
-      print("CreateItem error: $e");
-      print("Trying to connect to: $baseUrl/items");
+      print("CreateTask error: $e");
+      print("Trying to connect to: $baseUrl/tasks");
       return false;
     }
   }
 
-  /// Update an existing item
-  static Future<bool> updateItem(String id, String title, String description, String priority, DateTime? deadline) async {
+  /// Update an existing task
+  static Future<bool> updateTask(String id, String title, String description, String priority, DateTime? deadline) async {
     try {
       final token = await storage.read(key: "jwt");
-      final res = await http.put(Uri.parse("$baseUrl/items/$id"),
+      final res = await http.put(Uri.parse("$baseUrl/tasks/$id"),
           headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
           body: jsonEncode({
             "title": title,
@@ -107,21 +107,21 @@ class ApiService {
           }));
       return res.statusCode == 200;
     } catch (e) {
-      print("UpdateItem error: $e");
-      print("Trying to connect to: $baseUrl/items/$id");
+      print("UpdateTask error: $e");
+      print("Trying to connect to: $baseUrl/tasks/$id");
       return false;
     }
   }
 
-  static Future<bool> deleteItem(String id) async {
+  static Future<bool> deleteTask(String id) async {
     try {
       final token = await storage.read(key: "jwt");
-      final res = await http.delete(Uri.parse("$baseUrl/items/$id"),
+      final res = await http.delete(Uri.parse("$baseUrl/tasks/$id"),
           headers: {"Authorization": "Bearer $token"});
       return res.statusCode == 200;
     } catch (e) {
-      print("DeleteItem error: $e");
-      print("Trying to connect to: $baseUrl/items/$id");
+      print("DeleteTask error: $e");
+      print("Trying to connect to: $baseUrl/tasks/$id");
       return false;
     }
   }
@@ -129,13 +129,13 @@ class ApiService {
   static Future<bool> updateCompleteStatus(String id, bool completed) async {
     try {
       final token = await storage.read(key: "jwt");
-      final res = await http.patch(Uri.parse("$baseUrl/items/$id"),
+      final res = await http.patch(Uri.parse("$baseUrl/tasks/$id"),
           headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
           body: jsonEncode({"completed": completed}));
       return res.statusCode == 200;
     } catch (e) {
       print("UpdateCompleteStatus error: $e");
-      print("Trying to connect to: $baseUrl/items/$id");
+      print("Trying to connect to: $baseUrl/tasks/$id");
       return false;
     }
   }

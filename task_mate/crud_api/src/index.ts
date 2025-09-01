@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import itemRoutes from "./routes/itemRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/items", itemRoutes);
+app.use("/api/tasks", taskRoutes);
 
 // MongoDB Connection & Server Start
 const PORT = process.env.PORT || 5000;

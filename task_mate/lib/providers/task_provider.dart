@@ -14,7 +14,7 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = await ApiService.getItems();
+      final data = await ApiService.getTasks();
       _tasks = data;
     } catch (e) {
       if (kDebugMode) {
@@ -36,7 +36,7 @@ class TaskProvider extends ChangeNotifier {
     bool completed = false,
   }) async {
     try {
-      final success = await ApiService.createItem(
+      final success = await ApiService.createTask(
         title,
         description,
         priority,
@@ -76,7 +76,7 @@ class TaskProvider extends ChangeNotifier {
     required String priority,
   }) async {
     try {
-      final success = await ApiService.updateItem(
+      final success = await ApiService.updateTask(
         taskId,
         title,
         description,
@@ -100,7 +100,7 @@ class TaskProvider extends ChangeNotifier {
 
   Future<bool> deleteTask(String taskId) async {
     try {
-      final success = await ApiService.deleteItem(taskId);
+      final success = await ApiService.deleteTask(taskId);
       if (success) {
         // Refresh the task list to remove the deleted task
         await fetchTasks();
