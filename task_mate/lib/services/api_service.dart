@@ -112,4 +112,17 @@ class ApiService {
       return false;
     }
   }
+
+  static Future<bool> deleteItem(String id) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.delete(Uri.parse("$baseUrl/items/$id"),
+          headers: {"Authorization": "Bearer $token"});
+      return res.statusCode == 200;
+    } catch (e) {
+      print("DeleteItem error: $e");
+      print("Trying to connect to: $baseUrl/items/$id");
+      return false;
+    }
+  }
 }

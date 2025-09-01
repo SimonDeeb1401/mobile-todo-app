@@ -92,7 +92,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                   ),
                                   IconButton(
                                     onPressed: () {
-                                      //taskProvider.deleteTask(index);
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: const Text('Delete Task'),
+                                            content: const Text('Are you sure you want to delete this task?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  await taskProvider.deleteTask(task['_id']);
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
                                     },
                                     icon: const Icon(Icons.delete),
                                   ),

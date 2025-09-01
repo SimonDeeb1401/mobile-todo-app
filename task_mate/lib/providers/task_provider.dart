@@ -97,4 +97,21 @@ class TaskProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> deleteTask(String taskId) async {
+    try {
+      final success = await ApiService.deleteItem(taskId);
+      if (success) {
+        // Refresh the task list to remove the deleted task
+        await fetchTasks();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting task: $e');
+      }
+      return false;
+    }
+  }
 }
