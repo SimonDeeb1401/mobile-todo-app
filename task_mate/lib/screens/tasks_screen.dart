@@ -67,12 +67,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                               children: [
                                 Row(
                                 children: [
-                                  // Checkbox(
-                                  // value: task['completed'] ?? false,
-                                  // onChanged: (value) {
-                                  //   taskProvider.toggleTaskCompletion(index);
-                                  // },
-                                  // ),
                                   Expanded(
                                   child: Text(
                                     task['title'] ?? '',
@@ -88,7 +82,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                     onPressed: () {
                                       taskProvider.toggleTaskCompletion(index);
                                     },
-                                    icon: const Icon(Icons.check),
+                                    icon: (task['completed'] ?? false)
+                                        ? const Icon(Icons.check_circle, color: Colors.green)
+                                        : const Icon(Icons.check_circle, color: Colors.grey),
                                   ),
                                   IconButton(
                                     onPressed: () {

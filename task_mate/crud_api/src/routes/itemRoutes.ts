@@ -15,5 +15,6 @@ router.post("/", verifyToken, createItem);
 router.get("/", verifyToken, getItems);
 router.put("/:id", verifyToken, updateItem);
 router.delete("/:id", verifyToken, deleteItem);
+router.patch("/:id", verifyToken, updateItem);
 
 export default router;

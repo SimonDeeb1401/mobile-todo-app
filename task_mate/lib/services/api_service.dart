@@ -125,4 +125,18 @@ class ApiService {
       return false;
     }
   }
+
+  static Future<bool> updateCompleteStatus(String id, bool completed) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.patch(Uri.parse("$baseUrl/items/$id"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"completed": completed}));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("UpdateCompleteStatus error: $e");
+      print("Trying to connect to: $baseUrl/items/$id");
+      return false;
+    }
+  }
 }

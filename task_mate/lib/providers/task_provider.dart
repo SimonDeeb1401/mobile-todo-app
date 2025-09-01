@@ -63,7 +63,7 @@ class TaskProvider extends ChangeNotifier {
     if (index >= 0 && index < _tasks.length) {
       _tasks[index]['completed'] = !(_tasks[index]['completed'] ?? false);
       notifyListeners();
-      // TODO: Update on server as well if you have an update API endpoint
+      ApiService.updateCompleteStatus(_tasks[index]['_id'], _tasks[index]['completed']);
     }
   }
 
