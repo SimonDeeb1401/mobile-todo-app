@@ -125,32 +125,35 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                 Row(
                                 children: [
                                   Expanded(
-                                    child: Card(
-                                      color: _getPriorityColor(task['priority'] ?? 'N/A'),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Text(
-                                          'Priority: ${task['priority'] ?? 'N/A'}',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: (task['priority'] == 'low') ? Colors.black : Colors.white,
-                                          ),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: _getPriorityColor(task['priority'] ?? 'N/A'),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: Colors.black),
+                                      ),
+                                      child: Text(
+                                        'Priority: ${task['priority'] ?? 'N/A'}',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: (task['priority'] == 'low') ? Colors.black : Colors.white,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  //const SizedBox(width: 2),
+                                  const SizedBox(width: 8),
                                   Expanded(
-                                    child: Card(
-                                      color: Colors.red.shade50,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Text(
-                                          'Deadline: ${task['deadline'] != null ? DateTime.parse(task['deadline']).toLocal().toString().split(' ')[0] : 'N/A'}',
-                                          textAlign: TextAlign.center,
-                                        ),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.shade50,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: Colors.black),
+                                      ),
+                                      child: Text(
+                                        'Deadline: ${task['deadline'] != null ? DateTime.parse(task['deadline']).toLocal().toString().split(' ')[0] : 'N/A'}',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(color: Colors.black),
                                       ),
                                     ),
                                   ),
