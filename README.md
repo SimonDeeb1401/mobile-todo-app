@@ -6,9 +6,9 @@ It enables users to create, update, delete, and organize their tasks, while prov
 ## ✨ Features
 - 🔐 **Authentication** – User signup/login with **JWT** for secure sessions  
 - ✅ **Task Management (CRUD)** – Create, read, update, and delete tasks  
-- 🗂 **Database** – Tasks stored in **MongoDB**  
-- 📅 **Deadlines & Completion** – Track task deadlines and completion status *(in progress)*  
-- 📌 **Task Organization** – Sorting, filtering, and manual reordering *(planned)*  
+- 🗂 **Database** – Tasks stored in **MongoDB**
+- 📅 **Deadlines & Completion** – Track task deadlines and completion status
+- 📌 **Task Organization** – Sorting, filtering, and manual reordering *(in progress)*
 - 👥 **Collaboration** – Share and assign tasks, add comments *(planned)*  
 - 🔔 **Reminders** – Push notifications for upcoming tasks *(planned)*  
 
