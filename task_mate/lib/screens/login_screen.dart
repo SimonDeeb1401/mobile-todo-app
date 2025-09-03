@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'tasks_screen.dart';
 import 'signup_screen.dart';
+import '../theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,8 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: ValueKey('login_screen_v2'), // This forces rebuild on hot reload
-      backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -41,63 +40,36 @@ class _LoginScreenState extends State<LoginScreen> {
                 // App Logo/Title
                 Container(
                   padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
-                  ),
+                  decoration: AppDecorations.iconContainerDecoration,
                   child: Icon(
                     Icons.check_circle,
                     size: 50,
-                    color: Colors.red,
+                    color: AppColors.primary,
                   ),
                 ),
                 SizedBox(height: 40),
                 
                 // Welcome Text
                 Text(
-                  "Welcome Back",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
+                  "Welcome to TaskMate",
+                  style: AppTextStyles.heading1,
                 ),
                 SizedBox(height: 8),
                 Text(
                   "Sign in to continue",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
+                  style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
                 ),
                 SizedBox(height: 40),
 
                 // Email Input
                 Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        blurRadius: 15,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
+                  decoration: AppDecorations.inputFieldDecoration,
                   child: TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       labelText: "Email",
-                      prefixIcon: Icon(Icons.email_outlined, color: Colors.red),
+                      prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
@@ -112,23 +84,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Password Input
                 Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        blurRadius: 15,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
+                  decoration: AppDecorations.inputFieldDecoration,
                   child: TextField(
                     controller: passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: "Password",
-                      prefixIcon: Icon(Icons.lock_outline, color: Colors.red),
+                      prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
@@ -145,17 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   width: double.infinity,
                   height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
+                  decoration: AppDecorations.buttonDecoration,
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -169,11 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : Text(
                                 "Sign In",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
+                                style: AppTextStyles.button,
                               ),
                       ),
                     ),
@@ -187,10 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 16,
-                      ),
+                      style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -202,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         "Sign Up",
                         style: TextStyle(
-                          color: Colors.red,
+                          color: AppColors.primary,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline,

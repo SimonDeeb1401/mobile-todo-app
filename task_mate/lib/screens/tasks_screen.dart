@@ -44,9 +44,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text('My Tasks'),
+            automaticallyImplyLeading: false,
             actions: [
               IconButton(
-                icon: const Icon(Icons.logout),
+                icon: const Icon(Icons.logout, color: AppColors.primary),
                 onPressed: () async {
                   final success = await ApiService.logout();
                   if (success) {
@@ -67,10 +68,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
           body: taskProvider.isLoading
               ? const Center(child: CircularProgressIndicator())
               : taskProvider.tasks.isEmpty
-                  ? const Center(
+                  ?  Center(
                       child: Text(
                         'No tasks yet. Add your first task!',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
                       ),
                     )
                   : RefreshIndicator(
@@ -132,7 +133,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                         },
                                       );
                                     },
-                                    icon: const Icon(Icons.delete),
+                                    icon: const Icon(Icons.delete, color: Colors.red),
                                   ),
                                   IconButton(
                                   onPressed: () {
@@ -149,7 +150,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                     ),
                                     );
                                   },
-                                  icon: const Icon(Icons.edit, color: Colors.orange),
+                                  icon: const Icon(Icons.edit, color: AppColors.primary),
                                   ),
                                 ],
                                 ),
@@ -184,14 +185,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: Colors.red.shade50,
+                                        color: AppColors.secondary.withOpacity(0.5),
                                         borderRadius: BorderRadius.circular(10),
                                         border: Border.all(color: Colors.black),
                                       ),
                                       child: Text(
                                         'Deadline: ${task['deadline'] != null ? DateTime.parse(task['deadline']).toLocal().toString().split(' ')[0] : 'N/A'}',
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(color: Colors.black),
+                                        style: AppTextStyles.bodyMedium.copyWith(color: Colors.black),
                                       ),
                                     ),
                                   ),

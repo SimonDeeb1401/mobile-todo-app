@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'providers/task_provider.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MainApp());
@@ -19,37 +20,37 @@ class MainApp extends StatelessWidget {
       title: 'Task Mate',
       theme: ThemeData(
         // Primary color scheme
-        primarySwatch: Colors.red,
-        primaryColor: Colors.red,
+        //primarySwatch: AppColors.primary,
+        primaryColor: AppColors.primary,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.red,
+          seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
         
         // Background colors
-        scaffoldBackgroundColor: Colors.grey[100],
+        scaffoldBackgroundColor: AppColors.background,
         
         // AppBar theme
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.grey[800],
+          backgroundColor: AppColors.surface,
+          foregroundColor: AppColors.textPrimary,
           elevation: 2,
-          shadowColor: Colors.grey.withOpacity(0.2),
+          shadowColor: AppColors.shadow,
           titleTextStyle: TextStyle(
-            color: Colors.grey[800],
+            color: AppColors.textPrimary,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
-          iconTheme: IconThemeData(color: Colors.red),
+          iconTheme: IconThemeData(color: AppColors.textPrimary),
         ),
         
         // Button themes
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 8,
-            shadowColor: Colors.red.withOpacity(0.3),
+            shadowColor: AppColors.primary.withOpacity(0.3),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
@@ -63,7 +64,7 @@ class MainApp extends StatelessWidget {
         
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: Colors.red,
+            foregroundColor: AppColors.secondary,
             textStyle: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -85,18 +86,18 @@ class MainApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(color: Colors.red, width: 2),
+            borderSide: BorderSide(color: AppColors.primary, width: 2),
           ),
           contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          iconColor: Colors.red,
-          prefixIconColor: Colors.red,
+          iconColor: AppColors.primary,
+          prefixIconColor: AppColors.primary,
         ),
         
         // Card theme
         cardTheme: CardThemeData(
-          color: Colors.white,
+          color: AppColors.surface,
           elevation: 4,
-          shadowColor: Colors.grey.withOpacity(0.2),
+          shadowColor: AppColors.shadow,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -105,8 +106,8 @@ class MainApp extends StatelessWidget {
         
         // FloatingActionButton theme
         floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.surface,
           elevation: 8,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -116,37 +117,37 @@ class MainApp extends StatelessWidget {
         // Text themes
         textTheme: TextTheme(
           headlineLarge: TextStyle(
-            color: Colors.grey[800],
+            color: AppColors.textPrimary,
             fontSize: 32,
             fontWeight: FontWeight.bold,
           ),
           headlineMedium: TextStyle(
-            color: Colors.grey[800],
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
           headlineSmall: TextStyle(
-            color: Colors.grey[800],
+            color: AppColors.textPrimary,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
           bodyLarge: TextStyle(
-            color: Colors.grey[800],
+            color: AppColors.textPrimary,
             fontSize: 16,
           ),
           bodyMedium: TextStyle(
-            color: Colors.grey[700],
+            color: AppColors.textSecondary,
             fontSize: 14,
           ),
           bodySmall: TextStyle(
-            color: Colors.grey[600],
+            color: AppColors.textHint,
             fontSize: 12,
           ),
         ),
         
         // Icon theme
         iconTheme: IconThemeData(
-          color: Colors.red,
+          color: AppColors.textPrimary,
           size: 24,
         ),
         
@@ -157,23 +158,23 @@ class MainApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          iconColor: Colors.red,
+          iconColor: AppColors.primary,
         ),
         
         // Dialog theme
         dialogTheme: DialogThemeData(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           elevation: 8,
-          shadowColor: Colors.grey.withOpacity(0.3),
+          shadowColor: AppColors.shadow.withOpacity(0.3),
         ),
         
         // SnackBar theme
         snackBarTheme: SnackBarThemeData(
-          backgroundColor: Colors.grey[800],
-          contentTextStyle: TextStyle(color: Colors.white),
+          backgroundColor: AppColors.surface,
+          contentTextStyle: TextStyle(color: AppColors.textPrimary),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -182,8 +183,8 @@ class MainApp extends StatelessWidget {
         
         // Checkbox and Switch themes
         checkboxTheme: CheckboxThemeData(
-          fillColor: WidgetStateProperty.all(Colors.red),
-          checkColor: WidgetStateProperty.all(Colors.white),
+          fillColor: WidgetStateProperty.all(AppColors.primary),
+          checkColor: WidgetStateProperty.all(AppColors.surface),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
@@ -193,29 +194,29 @@ class MainApp extends StatelessWidget {
           thumbColor: WidgetStateProperty.all(Colors.white),
           trackColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return Colors.red.withOpacity(0.5);
+              return AppColors.primary.withOpacity(0.5);
             }
-            return Colors.grey.withOpacity(0.3);
+            return AppColors.textHint.withOpacity(0.3);
           }),
         ),
         
         // Bottom navigation theme
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: Colors.red,
-          unselectedItemColor: Colors.grey[600],
+          backgroundColor: AppColors.surface,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textHint,
           elevation: 8,
           type: BottomNavigationBarType.fixed,
         ),
         
         // Progress indicator theme
         progressIndicatorTheme: ProgressIndicatorThemeData(
-          color: Colors.red,
+          color: AppColors.primary,
         ),
         
         // Divider theme
         dividerTheme: DividerThemeData(
-          color: Colors.grey[300],
+          color: AppColors.textHint,
           thickness: 1,
           space: 20,
         ),
