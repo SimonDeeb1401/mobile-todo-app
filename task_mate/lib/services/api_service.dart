@@ -53,6 +53,17 @@ class ApiService {
     }
   }
 
+  // Logout
+  static Future<bool> logout() async {
+    try {
+      await storage.delete(key: "jwt");
+      return true;
+    } catch (e) {
+      print("Logout error: $e");
+      return false;
+    }
+  }
+
   // Get user tasks
   static Future<List<dynamic>> getTasks() async {
     final token = await storage.read(key: "jwt");

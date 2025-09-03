@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:task_mate/services/api_service.dart';
 import 'add_task.dart';
 import '../providers/task_provider.dart';
 import 'edit_tasks.dart';
+import 'login_screen.dart';
 import '../theme/app_theme.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -42,6 +44,25 @@ class _TaskListScreenState extends State<TaskListScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text('My Tasks'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () async {
+                  final success = await ApiService.logout();
+                  if (success) {
+                    if (!mounted) return;
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  } else {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Logout failed. Please try again.')),
+                    );
+                  }
+                },
+              ),
+            ],
           ),
           body: taskProvider.isLoading
               ? const Center(child: CircularProgressIndicator())
