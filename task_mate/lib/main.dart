@@ -15,6 +15,7 @@ class MainApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => TaskProvider(),
       child: MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Task Mate',
       theme: ThemeData(
         // Primary color scheme

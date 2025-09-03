@@ -118,7 +118,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                             actions: [
                                               TextButton(
                                                 onPressed: () => Navigator.of(context).pop(),
-                                                child: const Text('Cancel'),
+                                                child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
                                               ),
                                               TextButton(
                                                 onPressed: () async {
@@ -149,7 +149,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                     ),
                                     );
                                   },
-                                  icon: const Icon(Icons.edit),
+                                  icon: const Icon(Icons.edit, color: Colors.orange),
                                   ),
                                 ],
                                 ),
