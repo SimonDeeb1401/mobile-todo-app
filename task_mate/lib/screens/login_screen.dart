@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (success) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => TaskListScreen()));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login failed")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Wrong email or password")));
     }
   }
 
