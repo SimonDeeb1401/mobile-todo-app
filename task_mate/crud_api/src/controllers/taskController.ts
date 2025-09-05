@@ -1,73 +1,132 @@
-import type { Request, Response } from "express";
 import Task from "../models/Task.js";
 import type { ITask } from "../models/Task.js";
-import type { AuthRequest } from "../middleware/authMiddleware.js";
+import { connectToDatabase, createResponse, parseBody, type LambdaEvent, type LambdaResponse } from "../index.js";
+import { verifyTokenLambda, isErrorResponse, type AuthenticatedUser } from "../middleware/authMiddleware.js";
 
 // CREATE task for logged-in user
-export const createTask = async (req: AuthRequest, res: Response) => {
+export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
   try {
-    console.log("Creating task with data:", req.body);
-    console.log("Step 1: About to log user ID");
+    await connectToDatabase();
     
-    console.log("User ID:", req.user?.id);
-    console.log("Step 2: User ID logged successfully");
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
     
-    console.log("Step 3: About to destructure req.body");
-    const { title, description, priority, deadline, completed } = req.body;
-    console.log("Step 4: Destructured values:", { title, description, priority, deadline, completed });
+    const user = authResult.user;
+    const { title, description, priority, deadline, completed } = parseBody(event);
     
-    console.log("Step 5: About to create Task instance");
-    const task = new Task({ title, description, priority, deadline, completed, user: req.user!.id });
-    console.log("Step 6: Task instance created");
+    if (!title) {
+      return createResponse(400, { error: "Title is required" });
+    }
     
-    console.log("Task to be saved:", task);
-    console.log("Step 7: About to save task");
+    const task = new Task({ 
+      title, 
+      description, 
+      priority, 
+      deadline: deadline ? new Date(deadline) : undefined, 
+      completed: completed || false, 
+      user: user.id 
+    });
     
     await task.save();
-    console.log("Step 8: Task saved successfully:", task);
-    
-    res.status(201).json(task);
+    return createResponse(201, task);
   } catch (err) {
-    console.error("Error creating task:", err);
-    console.error("Error details:", JSON.stringify(err, null, 2));
-    res.status(500).json({ error: "Failed to create task", details: err instanceof Error ? err.message : String(err) });
+    console.error("Create task error:", err);
+    return createResponse(500, { 
+      error: "Failed to create task", 
+      details: err instanceof Error ? err.message : String(err) 
+    });
   }
 };
 
 // GET all tasks for the logged-in user
-export const getTasks = async (req: AuthRequest, res: Response) => {
+export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
   try {
-    const tasks = await Task.find({ user: req.user!.id });
-    res.json(tasks);
+    await connectToDatabase();
+    
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
+    
+    const user = authResult.user;
+    const tasks = await Task.find({ user: user.id });
+    
+    return createResponse(200, tasks);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch tasks" });
+    console.error("Get tasks error:", err);
+    return createResponse(500, { error: "Failed to fetch tasks" });
   }
 };
 
 // UPDATE task (only if it belongs to the logged-in user)
-export const updateTask = async (req: AuthRequest, res: Response) => {
+export const updateTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
   try {
-    const { id } = req.params;
+    await connectToDatabase();
+    
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
+    
+    const user = authResult.user;
+    const id = event.pathParameters?.id;
+    
+    if (!id) {
+      return createResponse(400, { error: "Task ID is required" });
+    }
+    
+    const updateData = parseBody(event);
+    
+    // Convert deadline to Date if provided
+    if (updateData.deadline) {
+      updateData.deadline = new Date(updateData.deadline);
+    }
+    
     const task = await Task.findOneAndUpdate(
-      { _id: id, user: req.user!.id }, // only allow own tasks
-      req.body,
+      { _id: id, user: user.id }, // only allow own tasks
+      updateData,
       { new: true }
     );
-    if (!task) return res.status(404).json({ error: "Task not found" });
-    res.json(task);
+    
+    if (!task) {
+      return createResponse(404, { error: "Task not found" });
+    }
+    
+    return createResponse(200, task);
   } catch (err) {
-    res.status(500).json({ error: "Failed to update task" });
+    console.error("Update task error:", err);
+    return createResponse(500, { error: "Failed to update task" });
   }
 };
 
 // DELETE task (only if it belongs to the logged-in user)
-export const deleteTask = async (req: AuthRequest, res: Response) => {
+export const deleteTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
   try {
-    const { id } = req.params;
-    const task = await Task.findOneAndDelete({ _id: id, user: req.user!.id });
-    if (!task) return res.status(404).json({ error: "Task not found" });
-    res.json({ message: "Task deleted" });
+    await connectToDatabase();
+    
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
+    
+    const user = authResult.user;
+    const id = event.pathParameters?.id;
+    
+    if (!id) {
+      return createResponse(400, { error: "Task ID is required" });
+    }
+    
+    const task = await Task.findOneAndDelete({ _id: id, user: user.id });
+    
+    if (!task) {
+      return createResponse(404, { error: "Task not found" });
+    }
+    
+    return createResponse(200, { message: "Task deleted" });
   } catch (err) {
-    res.status(500).json({ error: "Failed to delete task" });
+    console.error("Delete task error:", err);
+    return createResponse(500, { error: "Failed to delete task" });
   }
 };

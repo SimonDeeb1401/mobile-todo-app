@@ -5,18 +5,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final storage = FlutterSecureStorage();
 
-// Use different URLs for different platforms
 String get baseUrl {
-  if (Platform.isAndroid) {
-    // For Android emulator, use 10.0.2.2 to access host machine
-    // For physical device, use your actual IP address
-    return "http://10.0.0.9:5000/api"; // Change to 10.0.0.9 if using physical device
-  } else if (Platform.isIOS) {
-    // For iOS simulator, localhost should work
-    return "http://localhost:5000/api";
-  }
-  // Default fallback
-  return "http://10.0.0.9:5000/api";
+  return "https://yghey14rg9.execute-api.eu-west-1.amazonaws.com/api"; // AWS API Gateway URL
 }
 
 class ApiService {

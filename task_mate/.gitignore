@@ -42,6 +42,13 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Serverless artifacts
+.serverless/
+*.zip
+serverless-state.json
+meta.json
+cloudformation-template-update-stack.json
+
 # Other
 /crud_api/node_modules/
 /crud_api/dist/
