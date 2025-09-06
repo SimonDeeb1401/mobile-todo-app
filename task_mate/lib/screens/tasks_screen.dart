@@ -208,6 +208,13 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
             automaticallyImplyLeading: false,
             actions: [
               IconButton(
+                icon: const Icon(Icons.swap_vert, color: AppColors.primary),
+                onPressed: () {
+                  // Open sort/filter dialog
+                  
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.logout, color: AppColors.primary),
                 onPressed: () async {
                   final success = await ApiService.logout();

@@ -140,4 +140,18 @@ class ApiService {
       return false;
     }
   }
+
+  static Future<bool> updateSortPreference(String mode, String order) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.patch(Uri.parse("$baseUrl/user/sortPreference"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"mode": mode, "order": order}));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("UpdateSortPreference error: $e");
+      print("Trying to connect to: $baseUrl/user/sortPreference");
+      return false;
+    }
+  }
 }
