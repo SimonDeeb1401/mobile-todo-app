@@ -6,6 +6,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
 export interface AuthenticatedUser {
   id: string;
   email: string;
+  sortPreference: { 
+    mode: "createdAt" | "deadline" | "priority" | "manual"; 
+    order: "asc" | "desc"; 
+  };
 }
 
 export interface AuthRequest extends LambdaEvent {

@@ -51,7 +51,9 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     }
     
     const user = authResult.user;
-    const tasks = await Task.find({ user: user.id });
+    const tasks = (user.sortPreference.mode != "manual") 
+      ? await Task.find({ user: user.id }).sort({ [user.sortPreference.mode]: user.sortPreference.order === "asc" ? 1 : -1 }) 
+      : await Task.find({ user: user.id });
     
     return createResponse(200, tasks);
   } catch (err) {
