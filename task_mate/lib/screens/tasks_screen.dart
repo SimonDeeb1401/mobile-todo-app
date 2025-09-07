@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:task_mate/providers/user_provider.dart';
 import 'package:task_mate/services/api_service.dart';
 import 'add_task.dart';
 import '../providers/task_provider.dart';
@@ -24,6 +25,11 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<TaskProvider>(context, listen: false).fetchTasks();
     });
+
+    // Listen for changes in sort preference and refetch tasks
+    // Provider.of<UserProvider>(context, listen: false).addListener(() {
+    //   Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+    // });
   }
 
   @override
@@ -194,14 +200,99 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     );
   }
 
+  void _showSortDialog(BuildContext context, String currentSort, bool isAscending) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      String selectedSort = currentSort;
+      bool ascending = isAscending;
+
+      return AlertDialog(
+        title: const Text("Sort Tasks"),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<String>(
+                  title: const Text("Priority"),
+                  value: "priority",
+                  groupValue: selectedSort,
+                  onChanged: (value) {
+                    setState(() => selectedSort = value!);
+                  },
+                ),
+                RadioListTile<String>(
+                  title: const Text("Deadline"),
+                  value: "deadline",
+                  groupValue: selectedSort,
+                  onChanged: (value) {
+                    setState(() => selectedSort = value!);
+                  },
+                ),
+                RadioListTile<String>(
+                  title: const Text("Creation Date"),
+                  value: "createdAt",
+                  groupValue: selectedSort,
+                  onChanged: (value) {
+                    setState(() => selectedSort = value!);
+                  },
+                ),
+                RadioListTile<String>(
+                  title: const Text("Manual Order"),
+                  value: "manual",
+                  groupValue: selectedSort,
+                  onChanged: (value) {
+                    setState(() => selectedSort = value!);
+                  },
+                ),
+
+                const Divider(),
+
+                SwitchListTile(
+                  title: const Text("Ascending Order"),
+                  value: ascending,
+                  onChanged: (value) {
+                    setState(() => ascending = value);
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text("Apply"),
+            onPressed: () async{
+              // Call your API to update user preference
+              //await ApiService.updateSortPreference(selectedSort, ascending ? "asc" : "desc");
+              Provider.of<UserProvider>(context, listen: false).updateSortPreference(selectedSort, ascending ? "asc" : "desc");
+              // Refetch tasks with new sort order
+              await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<TaskProvider>(
-      builder: (context, taskProvider, child) {
+    return Consumer2<UserProvider, TaskProvider>(
+      builder: (context, userProvider, taskProvider, child) {
         // Filter tasks into completed and incomplete
         final incompleteTasks = taskProvider.tasks.where((task) => !(task['completed'] ?? false)).cast<Map<String, dynamic>>().toList();
         final completedTasks = taskProvider.tasks.where((task) => task['completed'] ?? false).cast<Map<String, dynamic>>().toList();
 
+        final currentSort = userProvider.mode;
+        final isAscending = userProvider.order == "asc";
         return Scaffold(
           appBar: AppBar(
             title: const Text('My Tasks'),
@@ -211,7 +302,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                 icon: const Icon(Icons.swap_vert, color: AppColors.primary),
                 onPressed: () {
                   // Open sort/filter dialog
-                  
+                  _showSortDialog(context, currentSort, isAscending);
                 },
               ),
               IconButton(

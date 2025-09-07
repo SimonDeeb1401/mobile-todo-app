@@ -2,10 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'providers/task_provider.dart';
+import 'providers/user_provider.dart';
 import 'theme/app_theme.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: const MainApp(),
+    )
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -13,9 +22,7 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => TaskProvider(),
-      child: MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Task Mate',
       theme: ThemeData(
@@ -222,7 +229,6 @@ class MainApp extends StatelessWidget {
         ),
       ),
       home: LoginScreen(),
-      ),
     );
   }
 }
