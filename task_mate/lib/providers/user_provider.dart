@@ -17,11 +17,10 @@ class UserProvider with ChangeNotifier {
       if (tasks != null) {
         _mode = mode;
         _order = order;
+        print("Tasks WLAAKKK: $tasks");
         // await ApiService.getTasks(); // Refresh tasks after updating preference
-        await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+        // await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
         notifyListeners();
-        print("(Provider) Updated sort preference to mode: $mode, order: $order");
-        print("Sorted tasks in provider: $tasks");
         return tasks;
       }
       return null;

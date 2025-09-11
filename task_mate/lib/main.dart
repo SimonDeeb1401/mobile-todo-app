@@ -25,7 +25,7 @@ class MainApp extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-      taskProvider.subscribeToUserProvider(userProvider);
+      //taskProvider.subscribeToUserProvider(userProvider);
     });
     return MaterialApp(
       debugShowCheckedModeBanner: false,
