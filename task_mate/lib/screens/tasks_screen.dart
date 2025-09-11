@@ -72,7 +72,17 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     }
 
     return RefreshIndicator(
-      onRefresh: taskProvider.fetchTasks,
+      onRefresh: () async {
+        // Get current sort preferences and fetch with those
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        final sortedTasks = await ApiService.updateSortPreference(
+          userProvider.mode, 
+          userProvider.order
+        );
+        if (sortedTasks != null) {
+          taskProvider.setTasks(sortedTasks);
+        }
+      },
       child: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
