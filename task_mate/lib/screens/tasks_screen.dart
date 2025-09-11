@@ -23,7 +23,11 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     _tabController = TabController(length: 2, vsync: this);
     // Fetch tasks when the screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      //context.watch<TaskProvider>().fetchTasks();
       Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+      Provider.of<UserProvider>(context, listen: false).addListener(() {
+        Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+      });
     });
 
     // Listen for changes in sort preference and refetch tasks
@@ -267,13 +271,18 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
           ),
           TextButton(
             child: const Text("Apply"),
-            onPressed: () async{
+            onPressed: () async {
               // Call your API to update user preference
-              //await ApiService.updateSortPreference(selectedSort, ascending ? "asc" : "desc");
-              Provider.of<UserProvider>(context, listen: false).updateSortPreference(selectedSort, ascending ? "asc" : "desc");
-              // Refetch tasks with new sort order
-              await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
-              Navigator.of(context).pop();
+              final tasks = await Provider.of<UserProvider>(context, listen: false).updateSortPreference(context,selectedSort, ascending ? "asc" : "desc");
+              print("Tasks after sort preference update in dialog: $tasks");
+              // if (tasks != null) {
+              //   Provider.of<TaskProvider>(context, listen: false).setTasks(tasks);
+              // } 
+              // //else {
+              //   // Refetch tasks with new sort order
+              //   await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+              // //}
+              if (context.mounted) Navigator.of(context).pop();
             },
           ),
         ],
@@ -293,6 +302,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
 
         final currentSort = userProvider.mode;
         final isAscending = userProvider.order == "asc";
+        print("Current sort: $currentSort, Ascending: $isAscending");
         return Scaffold(
           appBar: AppBar(
             title: const Text('My Tasks'),
@@ -303,6 +313,8 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                 onPressed: () {
                   // Open sort/filter dialog
                   _showSortDialog(context, currentSort, isAscending);
+                  _buildTaskList(incompleteTasks, taskProvider, true);
+                  _buildTaskList(completedTasks, taskProvider, false);
                 },
               ),
               IconButton(

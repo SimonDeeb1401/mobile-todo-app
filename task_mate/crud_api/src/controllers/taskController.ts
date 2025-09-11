@@ -55,6 +55,8 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
       ? await Task.find({ user: user.id }).sort({ [user.sortPreference.mode]: user.sortPreference.order === "asc" ? 1 : -1 }) 
       : await Task.find({ user: user.id });
     
+    console.log("Fetched tasks:", tasks);
+
     return createResponse(200, tasks);
   } catch (err) {
     console.error("Get tasks error:", err);

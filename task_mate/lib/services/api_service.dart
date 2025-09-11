@@ -141,17 +141,24 @@ class ApiService {
     }
   }
 
-  static Future<bool> updateSortPreference(String mode, String order) async {
+  static Future<List<dynamic>?> updateSortPreference(String mode, String order) async {
     try {
       final token = await storage.read(key: "jwt");
       final res = await http.patch(Uri.parse("$baseUrl/user/sortPreference"),
           headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
           body: jsonEncode({"mode": mode, "order": order}));
-      return res.statusCode == 200;
+      if(res.statusCode == 200) {
+        print("UpdateSortPreference response: ${res.body}");
+        final responseJson = jsonDecode(res.body);
+        final tasks = responseJson['tasks']; // This is your sorted tasks array
+        print("Sorted tasks: $tasks");
+        return tasks;
+      }
+      return null;
     } catch (e) {
       print("UpdateSortPreference error: $e");
       print("Trying to connect to: $baseUrl/user/sortPreference");
-      return false;
+      return null;
     }
   }
 }

@@ -4,9 +4,28 @@ import '../services/api_service.dart';
 class TaskProvider extends ChangeNotifier {
   List<dynamic> _tasks = [];
   bool _isLoading = false;
+  VoidCallback? _userProviderListener;
 
   List<dynamic> get tasks => _tasks;
   bool get isLoading => _isLoading;
+
+  /// Call this once to subscribe to UserProvider changes
+  void subscribeToUserProvider(ChangeNotifier userProvider) {
+    // Remove previous listener if any
+    if (_userProviderListener != null) {
+      userProvider.removeListener(_userProviderListener!);
+    }
+    _userProviderListener = () async {
+      await fetchTasks();
+      notifyListeners();
+    };
+    userProvider.addListener(_userProviderListener!);
+  }
+
+  void setTasks(List<dynamic> tasks) {
+    _tasks = List.from(tasks);
+    notifyListeners();
+  }
 
   /// Fetch tasks from API
   Future<void> fetchTasks() async {
@@ -15,7 +34,8 @@ class TaskProvider extends ChangeNotifier {
 
     try {
       final data = await ApiService.getTasks();
-      _tasks = data;
+      _tasks = List.from(data);
+      notifyListeners();
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching tasks: $e');
