@@ -6,6 +6,40 @@ import mongoose, { get } from "mongoose";
 import { getTasks } from "./taskController.js";
 import Task from "../models/Task.js";
 
+// Get user preferences for logged-in user
+export const getSortPreference = async (event: LambdaEvent): Promise<LambdaResponse> => {
+  try {
+    await connectToDatabase();
+    
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
+    
+    const user = authResult.user;
+    
+    // Find the user and get their sort preferences
+    const userData: IUser | null = await User.findById(user.id).select('sortPreference');
+    
+    if (!userData) {
+      return createResponse(404, { error: "User not found" });
+    }
+    
+    return createResponse(200, { 
+      sortMode: userData.sortPreference.mode,
+      sortOrder: userData.sortPreference.order,
+      sortPreference: userData.sortPreference 
+    });
+    
+  } catch (err) {
+    console.error("Get user preferences error:", err);
+    return createResponse(500, { 
+      error: "Failed to get user preferences", 
+      details: err instanceof Error ? err.message : String(err) 
+    });
+  }
+};
+
 // update sort preference for logged-in user
 export const updateSortPreference = async (event: LambdaEvent): Promise<LambdaResponse> => {
   try {

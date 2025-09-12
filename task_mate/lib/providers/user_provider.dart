@@ -11,6 +11,25 @@ class UserProvider with ChangeNotifier {
   String get mode => _mode;
   String get order => _order;
 
+  UserProvider() {
+    _fetchSortPreference();
+  }
+  
+  Future<void> _fetchSortPreference() async {
+    try {
+      final pref = await ApiService.getSortPreference();
+      if (pref != null) {
+        _mode = pref['mode'] ?? "createdAt";
+        _order = pref['order'] ?? "asc";
+        notifyListeners();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching sort preference: $e');
+      }
+    }
+  }
+
   Future<List<dynamic>?> updateSortPreference(BuildContext context, String mode, String order) async {
     try {
       final tasks = await ApiService.updateSortPreference(mode, order);

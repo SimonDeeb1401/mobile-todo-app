@@ -141,6 +141,27 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, String>?> getSortPreference() async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.get(Uri.parse("$baseUrl/user/sortPreference"),
+          headers: {"Authorization": "Bearer $token"});
+
+      if (res.statusCode == 200) {
+        final responseJson = jsonDecode(res.body);
+        return {
+          "mode": responseJson['sortMode'],
+          "order": responseJson['sortOrder'],
+        };
+      }
+      return null;
+    } catch (e) {
+      print("GetSortPreference error: $e");
+      print("Trying to connect to: $baseUrl/user/sortPreference");
+      return null;
+    }
+  }
+
   static Future<List<dynamic>?> updateSortPreference(String mode, String order) async {
     try {
       final token = await storage.read(key: "jwt");

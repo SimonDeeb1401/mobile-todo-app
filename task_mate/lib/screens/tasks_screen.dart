@@ -221,8 +221,8 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
   showDialog(
     context: context,
     builder: (context) {
-      String selectedSort = currentSort;
-      bool ascending = isAscending;
+      late String selectedSort = currentSort;
+      late bool ascending = isAscending;
 
       return AlertDialog(
         title: const Text("Sort Tasks"),
@@ -264,6 +264,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                   },
                 ),
 
+                
                 const Divider(),
 
                 SwitchListTile(

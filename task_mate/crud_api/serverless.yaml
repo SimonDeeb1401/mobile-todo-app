@@ -70,6 +70,13 @@ functions:
           method: delete
           path: /api/tasks/{id}
 
+  getSortPreference:
+    handler: dist/controllers/userController.getSortPreference
+    events:
+      - httpApi:
+          method: get
+          path: /api/user/sortPreference
+  
   updateSortPreference:
     handler: dist/controllers/userController.updateSortPreference
     events:
