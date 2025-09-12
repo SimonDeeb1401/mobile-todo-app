@@ -1,7 +1,5 @@
 import '../services/api_service.dart';
 import 'package:flutter/foundation.dart';
-import 'task_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 
 class UserProvider with ChangeNotifier {
@@ -36,9 +34,6 @@ class UserProvider with ChangeNotifier {
       if (tasks != null) {
         _mode = mode;
         _order = order;
-        print("Tasks WLAAKKK: $tasks");
-        // await ApiService.getTasks(); // Refresh tasks after updating preference
-        // await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
         notifyListeners();
         return tasks;
       }

@@ -4,27 +4,31 @@ import '../services/api_service.dart';
 class TaskProvider extends ChangeNotifier {
   List<dynamic> _tasks = [];
   bool _isLoading = false;
-  VoidCallback? _userProviderListener;
 
   List<dynamic> get tasks => _tasks;
   bool get isLoading => _isLoading;
 
-  /// Call this once to subscribe to UserProvider changes
-  void subscribeToUserProvider(ChangeNotifier userProvider) {
-    // Remove previous listener if any
-    if (_userProviderListener != null) {
-      userProvider.removeListener(_userProviderListener!);
-    }
-    _userProviderListener = () async {
-      await fetchTasks();
-      notifyListeners();
-    };
-    userProvider.addListener(_userProviderListener!);
-  }
-
   void setTasks(List<dynamic> tasks) {
     _tasks = List.from(tasks);
     notifyListeners();
+  }
+
+  Future<void> fetchTasksSorted() async {
+    try {
+      final sortPreference = await ApiService.getSortPreference();
+      final sortedTasks = await ApiService.updateSortPreference(
+        sortPreference?['mode'] ?? "createdAt", 
+        sortPreference?['order'] ?? "asc"
+      );
+      if (sortedTasks != null) {
+        setTasks(sortedTasks);
+      }
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching sorted tasks: $e');
+      }
+    }
   }
 
   /// Fetch tasks from API
@@ -66,7 +70,7 @@ class TaskProvider extends ChangeNotifier {
 
       if (success) {
         // Refresh the task list to include the new task
-        await fetchTasks();
+        await fetchTasksSorted();
         return true;
       }
       return false;
@@ -106,7 +110,7 @@ class TaskProvider extends ChangeNotifier {
 
       if (success) {
         // Refresh the task list to include the updated task
-        await fetchTasks();
+        await fetchTasksSorted();
         return true;
       }
       return false;
@@ -123,7 +127,7 @@ class TaskProvider extends ChangeNotifier {
       final success = await ApiService.deleteTask(taskId);
       if (success) {
         // Refresh the task list to remove the deleted task
-        await fetchTasks();
+        await fetchTasksSorted();
         return true;
       }
       return false;

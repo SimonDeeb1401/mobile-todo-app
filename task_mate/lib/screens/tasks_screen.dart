@@ -17,26 +17,15 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  //List<Map<String, dynamic>> get incompleteTasks => Provider.of<TaskProvider>(context, listen: false).tasks.where((task) => !(task['completed'] ?? false)).cast<Map<String, dynamic>>().toList();
-  //List<Map<String, dynamic>> get completedTasks => Provider.of<TaskProvider>(context, listen: false).tasks.where((task) => task['completed'] ?? false).cast<Map<String, dynamic>>().toList();
-
+  
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     // Fetch tasks when the screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      //context.watch<TaskProvider>().fetchTasks();
       Provider.of<TaskProvider>(context, listen: false).fetchTasks();
-      // Provider.of<UserProvider>(context, listen: false).addListener(() {
-      //   Provider.of<TaskProvider>(context, listen: false).fetchTasks();
-      // });
     });
-
-    // Listen for changes in sort preference and refetch tasks
-    // Provider.of<UserProvider>(context, listen: false).addListener(() {
-    //   Provider.of<TaskProvider>(context, listen: false).fetchTasks();
-    // });
   }
 
   @override
@@ -288,21 +277,9 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
             onPressed: () async {
               // Call your API to update user preference
               final tasks = await Provider.of<UserProvider>(context, listen: false).updateSortPreference(context,selectedSort, ascending ? "asc" : "desc");
-              print("Tasks after sort preference update in dialog: $tasks");
-              
-              //final isPendingTab = _tabController.index == 0;
-              //_buildTaskList((tasks ?? []).cast<Map<String, dynamic>>(), Provider.of<TaskProvider>(context, listen: false), isPendingTab);
               if (tasks != null) {
                 Provider.of<TaskProvider>(context, listen: false).setTasks(tasks);
-                print("SetTasks: $tasks");
-                // incompleteTasks = tasks.where((task) => !(task['completed'] ?? false)).cast<Map<String, dynamic>>().toList();
-                // completedTasks = tasks.where((task) => task['completed'] ?? false).cast<Map<String, dynamic>>().toList();
               }
-              // //else {
-                // Refetch tasks with new sort order
-                // await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
-                // print("Refetched tasks: ${Provider.of<TaskProvider>(context, listen: false).tasks}");
-              // //}
               if (context.mounted) Navigator.of(context).pop();
             },
           ),
@@ -322,11 +299,8 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
         final incompleteTasks = tasks.where((task) => !(task['completed'] ?? false)).cast<Map<String, dynamic>>().toList();
         final completedTasks = tasks.where((task) => task['completed'] ?? false).cast<Map<String, dynamic>>().toList();
 
-        print("Incomplete tasks: $incompleteTasks");
-        print("Completed tasks: $completedTasks");
         final currentSort = userProvider.mode;
         final isAscending = userProvider.order == "asc";
-        print("Current sort: $currentSort, Ascending: $isAscending");
         return Scaffold(
           appBar: AppBar(
             title: const Text('My Tasks'),

@@ -23,8 +23,8 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      Provider.of<UserProvider>(context, listen: false);
+      Provider.of<TaskProvider>(context, listen: false);
       //taskProvider.subscribeToUserProvider(userProvider);
     });
     return MaterialApp(
