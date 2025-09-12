@@ -2,6 +2,7 @@ import Task from "../models/Task.js";
 import type { ITask } from "../models/Task.js";
 import { connectToDatabase, createResponse, parseBody, type LambdaEvent, type LambdaResponse } from "../index.js";
 import { verifyTokenLambda, isErrorResponse, type AuthenticatedUser } from "../middleware/authMiddleware.js";
+import mongoose from "mongoose";
 
 // CREATE task for logged-in user
 export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
@@ -51,9 +52,35 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     }
     
     const user = authResult.user;
-    const tasks = (user.sortPreference.mode != "manual") 
-      ? await Task.find({ user: user.id }).sort({ [user.sortPreference.mode]: user.sortPreference.order === "asc" ? 1 : -1 }) 
-      : await Task.find({ user: user.id });
+    let tasks;
+
+    if (user.sortPreference.mode === "priority") {
+      tasks = await Task.aggregate([
+        { $match: { user: new mongoose.Types.ObjectId(user.id) } },
+        { $addFields: {
+            priorityValue: { 
+              $switch: {
+                branches: [
+                  { case: { $eq: ["$priority", "high"] }, then: 3 },
+                  { case: { $eq: ["$priority", "medium"] }, then: 2 },
+                  { case: { $eq: ["$priority", "low"] }, then: 1 }
+                ],
+                default: 4
+              }
+            }
+          }
+        },
+        { $sort: { priorityValue: user.sortPreference.order === "asc" ? 1 : -1 }},
+        { $project: { priorityValue: 0 }} 
+      ]);
+    }
+
+    else{
+      tasks = (user.sortPreference.mode === "deadline" || user.sortPreference.mode === "createdAt") 
+        ? await Task.find({ user: user.id }).sort({ [user.sortPreference.mode]: user.sortPreference.order === "asc" ? 1 : -1 }) 
+        : await Task.find({ user: user.id });
+    }
+    
     
     console.log("Fetched tasks:", tasks);
 
