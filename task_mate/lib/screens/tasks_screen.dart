@@ -72,7 +72,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
           taskProvider.setTasks(sortedTasks);
         }
       },
-      child: (Provider.of<UserProvider>(context).mode == "manual")
+      child: (Provider.of<UserProvider>(context).mode != "manual")
       ? ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
