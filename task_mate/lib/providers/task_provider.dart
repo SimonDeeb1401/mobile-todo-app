@@ -138,4 +138,23 @@ class TaskProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  void moveTaskLocally(int oldOrderIndex, int newOrderIndex){
+    final task = _tasks.removeAt(oldOrderIndex);
+    _tasks.insert(newOrderIndex, task);
+    notifyListeners();
+  }
+
+  Future<void> moveTaskOnServer(String taskId, int newOrderIndex) async {
+    try {
+      final success = await ApiService.moveTask(taskId, newOrderIndex);
+      if (success) {
+        await fetchTasksSorted();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error moving task on server: $e');
+      }
+    }
+  }
 }
