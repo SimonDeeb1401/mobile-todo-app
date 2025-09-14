@@ -66,7 +66,11 @@ export const updateSortPreference = async (event: LambdaEvent): Promise<LambdaRe
     //const tasksResponse = await getTasks(event);
     let tasks;
 
-    if (updatedUser.sortPreference.mode === "priority") {
+    if (updatedUser.sortPreference.mode === "manual") {
+      tasks = await Task.find({ user: user.id }).sort({ orderIndex: 1 });
+    }
+
+    else if (updatedUser.sortPreference.mode === "priority") {
       tasks = await Task.aggregate([
         { $match: { user: new mongoose.Types.ObjectId(user.id) } },
         { $addFields: {
@@ -86,10 +90,9 @@ export const updateSortPreference = async (event: LambdaEvent): Promise<LambdaRe
         { $project: { priorityValue: 0 }} 
       ]);
     }
-    else{
-      tasks = (updatedUser.sortPreference.mode === "deadline" || updatedUser.sortPreference.mode === "createdAt") 
-            ? await Task.find({ user: user.id }).sort({ [updatedUser.sortPreference.mode]: updatedUser.sortPreference.order === "asc" ? 1 : -1 }) 
-            : await Task.find({ user: user.id });
+
+    else {
+      tasks =  await Task.find({ user: user.id }).sort({ [updatedUser.sortPreference.mode]: updatedUser.sortPreference.order === "asc" ? 1 : -1 });
     }
 
     console.log("Tasks after sort preference update:", tasks);

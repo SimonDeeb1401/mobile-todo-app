@@ -24,4 +24,6 @@ const taskSchema: Schema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+taskSchema.index({ user: 1, orderIndex: 1 });
+
 export default mongoose.model<ITask>("Task", taskSchema);

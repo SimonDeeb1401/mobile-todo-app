@@ -181,4 +181,32 @@ class ApiService {
       return null;
     }
   }
+
+  static Future<bool> moveTask(String id, int newOrderIndex) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.patch(Uri.parse("$baseUrl/tasks/$id/move"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"newOrderIndex": newOrderIndex}));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("MoveTask error: $e");
+      print("Trying to connect to: $baseUrl/tasks/$id/move");
+      return false;
+    }
+  }
+
+  static Future<bool> reorderAllTasks(List<Map<String, dynamic>> tasks) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.post(Uri.parse("$baseUrl/tasks/reorder"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"tasks": tasks}));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("ReorderAllTasks error: $e");
+      print("Trying to connect to: $baseUrl/tasks/reorder");
+      return false;
+    }
+  }
 }
