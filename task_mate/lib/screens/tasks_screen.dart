@@ -207,13 +207,33 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
       : ReorderableListView.builder(
         itemCount: tasks.length,
         onReorder: (oldOrderIndex, newOrderIndex) async {
+          // Validate indices before reordering
+          if (oldOrderIndex < 0 || oldOrderIndex >= tasks.length || 
+              newOrderIndex < 0 || newOrderIndex > tasks.length) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Invalid reorder operation"))
+            );
+            return;
+          }
+          
           final moved = tasks[oldOrderIndex];
+          
+          // Move task locally with ReorderableListView indices
           taskProvider.moveTaskLocally(oldOrderIndex, newOrderIndex);
-          try{
-            await taskProvider.moveTaskOnServer(moved['_id'], newOrderIndex);
+          
+          try {
+            // For server call, we need the final position after the local move
+            // Calculate the actual final index
+            int finalIndex = newOrderIndex;
+            if (newOrderIndex > oldOrderIndex) {
+              finalIndex = newOrderIndex - 1;
+            }
+            finalIndex = finalIndex.clamp(0, tasks.length - 1);
+
+            await taskProvider.moveTaskOnServer(moved['_id'], finalIndex);
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Failed to reorder tasks"))
+              const SnackBar(content: Text("Failed to reorder tasks"))
             );
           }
         },

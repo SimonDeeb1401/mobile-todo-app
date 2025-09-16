@@ -182,17 +182,21 @@ class ApiService {
     }
   }
 
-  static Future<bool> moveTask(String id, int newOrderIndex) async {
+  static Future<Map<String, dynamic>?> moveTask(String id, int newOrderIndex) async {
     try {
       final token = await storage.read(key: "jwt");
       final res = await http.patch(Uri.parse("$baseUrl/tasks/$id/move"),
           headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
-          body: jsonEncode({"newOrderIndex": newOrderIndex}));
-      return res.statusCode == 200;
+          body: jsonEncode({"newIndex": newOrderIndex}));
+      
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body);
+      }
+      return null;
     } catch (e) {
       print("MoveTask error: $e");
       print("Trying to connect to: $baseUrl/tasks/$id/move");
-      return false;
+      return null;
     }
   }
 
