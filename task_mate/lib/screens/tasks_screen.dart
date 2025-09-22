@@ -518,7 +518,10 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                     children: dueDateOptions.map((option) {
                       return ChoiceChip(
                         label: Text(option),
-                        selected: selectedDueDate == option,
+                        selected: option == "Custom" 
+                          ? (selectedDueDate != null && 
+                            !["Today", "This Week", "This Month"].contains(selectedDueDate))
+                          : selectedDueDate == option,
                         onSelected: (bool value) async {
                           if (option == "Custom" && value) {
                             final picked = await showDatePicker(
@@ -565,14 +568,14 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                           await taskProvider.fetchTasksSorted();
                           String? filterDeadline = switch (selectedDueDate) {
                             "Today" => DateTime.now().toIso8601String().split('T')[0],
-                            "This Week" => DateTime.now().add(const Duration(days: 7)).toIso8601String().split('T')[0],
+                            "This Week" => DateTime.now().add(Duration(days: 7 - DateTime.now().weekday)).toIso8601String().split('T')[0],
                             "This Month" => DateTime(DateTime.now().year, DateTime.now().month + 1).toIso8601String().split('T')[0],
                             null => null,
                             _ => selectedDueDate?.split('T')[0], // Custom date
                           };
-                          taskProvider.setTasks(taskProvider.tasks.where((task) => (task['priority'] != null && 
-                            selectedPriorities.contains(task['priority'].toString()[0].toUpperCase() + task['priority'].toString().substring(1))) || 
-                            (filterDeadline != null && task['deadline'].toString().split('T')[0] == filterDeadline)).toList()); // Reset to all tasks before filtering
+                          taskProvider.setTasks(taskProvider.tasks.where((task) => (selectedPriorities.isEmpty || (task['priority'] != null && 
+                            selectedPriorities.contains(task['priority'].toString()[0].toUpperCase() + task['priority'].toString().substring(1)))) && 
+                            (filterDeadline == null || DateTime.parse(task['deadline'].toString().split('T')[0]).compareTo(DateTime.parse(filterDeadline)) <= 0)).toList());
                           Navigator.pop(context, {
                             "priorities": selectedPriorities,
                             "deadline": selectedDueDate,
