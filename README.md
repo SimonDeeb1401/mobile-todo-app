@@ -18,7 +18,7 @@ You can try out the first demo version of TaskMate from the GitHub Releases page
 
 ## 🛠 Tech Stack
 - **Frontend (Mobile):** Flutter  
-- **Backend:** Node.js, Express.js  
+- **Backend:** Node.js, AWS Lambda (native handlers) + API Gateway  
 - **Authentication:** JWT  
 - **Database:** MongoDB  
 - **API Style:** REST API  
