@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { title } from "process";
 
 export interface ITask extends Document {
   title: string;
@@ -23,6 +24,8 @@ const taskSchema: Schema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
+
+taskSchema.index({ title: "text", description: "text" });
 
 taskSchema.index({ user: 1, orderIndex: 1 });
 

@@ -54,10 +54,19 @@ class ApiService {
   }
 
   // Get user tasks
-  static Future<List<dynamic>> getTasks() async {
+  static Future<List<dynamic>> getTasks({ String? search, int? limit }) async {
     final token = await storage.read(key: "jwt");
-    final res = await http.get(Uri.parse("$baseUrl/tasks"),
-        headers: {"Authorization": "Bearer $token"});
+
+    final queryParameters = <String, String>{};
+    if (search != null && search.trim().isNotEmpty) {
+      queryParameters['search'] = search.trim();
+    }
+    if (limit != null) {
+      queryParameters['limit'] = limit.toString();
+    }
+    final uri = Uri.parse("$baseUrl/tasks").replace(queryParameters: queryParameters.isEmpty ? null : queryParameters);
+
+    final res = await http.get(uri, headers: {"Authorization": "Bearer $token"});
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     } else {

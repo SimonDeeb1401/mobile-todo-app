@@ -55,6 +55,14 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     }
     
     const user = authResult.user;
+
+    const { search } = event.queryStringParameters || {};
+    const filter: any = { user: user.id };
+
+    if (search) {
+      filter.$text = { $search: search };
+    }
+
     let tasks;
 
     if (user.sortPreference.mode === "manual") {

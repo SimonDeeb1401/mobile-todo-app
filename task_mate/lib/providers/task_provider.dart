@@ -166,7 +166,6 @@ class TaskProvider extends ChangeNotifier {
 
   Future<void> moveTaskOnServer(String taskId, int newOrderIndex) async {
     try {
-      //final orderIndex = _tasks[newOrderIndex]['orderIndex'];
       final moved = await ApiService.moveTask(taskId, newOrderIndex);
       if (moved == null) {
         if (kDebugMode) {
@@ -180,8 +179,12 @@ class TaskProvider extends ChangeNotifier {
       if (kDebugMode) {
         print('Error moving task on server: $e');
       }
-      // Optionally refresh to sync with server state on error
-      // await fetchTasksSorted();
     }
+  }
+
+  Future<void> fetchSearchResults({required String search}) async {
+    await fetchTasksSorted();
+    setTasks(_tasks.where((task) => task['title'].toString().toLowerCase().contains(search.toLowerCase()) || task['description'].toString().toLowerCase().contains(search.toLowerCase())).toList());
+    notifyListeners();
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:task_mate/providers/user_provider.dart';
 import 'package:task_mate/services/api_service.dart';
+import 'dart:async';
 import 'add_task.dart';
 import '../providers/task_provider.dart';
 import 'edit_tasks.dart';
@@ -17,6 +18,9 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  bool _isSearching = false;
   
   @override
   void initState() {
@@ -31,6 +35,8 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
   @override
   void dispose() {
     _tabController.dispose();
+    _debounce?.cancel();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -593,6 +599,32 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     );
   }
 
+  void _startSearch() {
+    setState(() => _isSearching = true);
+  }
+
+  void _stopSearch() {
+    _searchController.clear();
+    _applySearch("");
+    setState(() => _isSearching = false);
+  }
+
+  void _onSearchChanged(String q) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _applySearch(q);
+    });
+  }
+
+  Future<void> _applySearch(String q) async {
+    final trimmed = q.trim();
+    if (trimmed.length >= 2) {
+      await Provider.of<TaskProvider>(context, listen: false).fetchSearchResults(search: trimmed);
+    } else if (trimmed.isEmpty) {
+      await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<UserProvider, TaskProvider>(
@@ -606,26 +638,36 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
         final isAscending = userProvider.order == "asc";
         return Scaffold(
           appBar: AppBar(
-            title: const Text('My Tasks'),
+            title: !_isSearching 
+              ? Text('My Tasks', style: AppTextStyles.heading3.copyWith(color: AppColors.primary))
+              : TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: 'Search tasks...',
+                    border: InputBorder.none,
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.cancel, color: Colors.grey),
+                      onPressed: () {
+                        _searchController.clear();
+                        _applySearch("");
+                      },
+                    )
+                  ),
+                  onChanged: _onSearchChanged,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (v) => _applySearch(v),
+                ),
             automaticallyImplyLeading: false,
             actions: [
+              !_isSearching
+                ? IconButton(icon: const Icon(Icons.search, color: AppColors.primary), onPressed: _startSearch)
+                : IconButton(icon: const Icon(Icons.close, color: AppColors.primary), onPressed: _stopSearch),
               IconButton(
                 icon: const Icon(Icons.tune, color: AppColors.primary),
                 onPressed: () {
                   // Open filter bottom sheet
                   _showFilterBottomSheet(context, initialPriorities: [], initialDeadline: null);
-                  // filter.then((filters) {
-                  //   if (filters != null) {
-                  //     final selectedPriorities = filters['priorities'] as List<String>;
-                  //     final selectedDeadline = filters['deadline'] as String?;
-                  //     incompleteTasks = incompleteTasks.where((task) => selectedPriorities.isEmpty || 
-                  //     selectedPriorities.contains(((task['priority']).toString()[0].toUpperCase() + (task['priority']).toString().substring(1).toLowerCase()))).toList();
-                  //     completedTasks = completedTasks.where((task) => selectedPriorities.isEmpty || 
-                  //     selectedPriorities.contains(((task['priority']).toString()[0].toUpperCase() + (task['priority']).toString().substring(1).toLowerCase()))).toList();
-                  //     _buildTaskList(incompleteTasks, taskProvider, true);
-                  //     _buildTaskList(completedTasks, taskProvider, false);
-                  //   }
-                  // });
                 },
               ),
               IconButton(
