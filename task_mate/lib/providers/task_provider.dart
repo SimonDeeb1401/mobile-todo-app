@@ -8,6 +8,29 @@ class TaskProvider extends ChangeNotifier {
   List<dynamic> get tasks => _tasks;
   bool get isLoading => _isLoading;
 
+  void setTasks(List<dynamic> tasks) {
+    _tasks = List.from(tasks);
+    notifyListeners();
+  }
+
+  Future<void> fetchTasksSorted() async {
+    try {
+      final sortPreference = await ApiService.getSortPreference();
+      final sortedTasks = await ApiService.updateSortPreference(
+        sortPreference?['mode'] ?? "createdAt", 
+        sortPreference?['order'] ?? "asc"
+      );
+      if (sortedTasks != null) {
+        setTasks(sortedTasks);
+      }
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching sorted tasks: $e');
+      }
+    }
+  }
+
   /// Fetch tasks from API
   Future<void> fetchTasks() async {
     _isLoading = true;
@@ -15,7 +38,8 @@ class TaskProvider extends ChangeNotifier {
 
     try {
       final data = await ApiService.getTasks();
-      _tasks = data;
+      _tasks = List.from(data);
+      notifyListeners();
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching tasks: $e');
@@ -46,7 +70,7 @@ class TaskProvider extends ChangeNotifier {
 
       if (success) {
         // Refresh the task list to include the new task
-        await fetchTasks();
+        await fetchTasksSorted();
         return true;
       }
       return false;
@@ -64,6 +88,10 @@ class TaskProvider extends ChangeNotifier {
       _tasks[index]['completed'] = !(_tasks[index]['completed'] ?? false);
       notifyListeners();
       ApiService.updateCompleteStatus(_tasks[index]['_id'], _tasks[index]['completed']);
+    } else {
+      if (kDebugMode) {
+        print('Invalid index for toggleTaskCompletion: $index, tasks length: ${_tasks.length}');
+      }
     }
   }
 
@@ -86,7 +114,7 @@ class TaskProvider extends ChangeNotifier {
 
       if (success) {
         // Refresh the task list to include the updated task
-        await fetchTasks();
+        await fetchTasksSorted();
         return true;
       }
       return false;
@@ -103,7 +131,7 @@ class TaskProvider extends ChangeNotifier {
       final success = await ApiService.deleteTask(taskId);
       if (success) {
         // Refresh the task list to remove the deleted task
-        await fetchTasks();
+        await fetchTasksSorted();
         return true;
       }
       return false;
@@ -113,5 +141,50 @@ class TaskProvider extends ChangeNotifier {
       }
       return false;
     }
+  }
+
+  void moveTaskLocally(int oldOrderIndex, int newOrderIndex){
+    // Validate indices before performing operations
+    if (oldOrderIndex < 0 || oldOrderIndex >= _tasks.length) {
+      if (kDebugMode) {
+        print('Invalid oldOrderIndex: $oldOrderIndex, tasks length: ${_tasks.length}');
+      }
+      return;
+    }
+
+    // Ensure newOrderIndex is within valid bounds for insertion
+    newOrderIndex = newOrderIndex.clamp(0, _tasks.length);
+    
+    final task = _tasks.removeAt(oldOrderIndex);
+    
+    // After removal, adjust the insertion index if needed
+    final insertIndex = newOrderIndex > oldOrderIndex ? newOrderIndex - 1 : newOrderIndex;
+    
+    _tasks.insert(insertIndex.clamp(0, _tasks.length), task);
+    notifyListeners();
+  }
+
+  Future<void> moveTaskOnServer(String taskId, int newOrderIndex) async {
+    try {
+      final moved = await ApiService.moveTask(taskId, newOrderIndex);
+      if (moved == null) {
+        if (kDebugMode) {
+          print('Failed to move task on server: $taskId to index $newOrderIndex');
+        }
+        return;
+      }
+      
+      await fetchTasksSorted();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error moving task on server: $e');
+      }
+    }
+  }
+
+  Future<void> fetchSearchResults({required String search}) async {
+    await fetchTasksSorted();
+    setTasks(_tasks.where((task) => task['title'].toString().toLowerCase().contains(search.toLowerCase()) || task['description'].toString().toLowerCase().contains(search.toLowerCase())).toList());
+    notifyListeners();
   }
 }

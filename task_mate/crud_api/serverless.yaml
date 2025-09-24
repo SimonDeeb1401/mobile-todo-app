@@ -70,6 +70,34 @@ functions:
           method: delete
           path: /api/tasks/{id}
 
+  getSortPreference:
+    handler: dist/controllers/userController.getSortPreference
+    events:
+      - httpApi:
+          method: get
+          path: /api/user/sortPreference
+  
+  updateSortPreference:
+    handler: dist/controllers/userController.updateSortPreference
+    events:
+      - httpApi:
+          method: patch
+          path: /api/user/sortPreference
+
+  moveTask:
+    handler: dist/controllers/taskController.moveTask
+    events:
+      - httpApi:
+          method: patch
+          path: /api/tasks/{id}/move
+
+  reorderAllTasks:
+    handler: dist/controllers/taskController.reorderAllTasks
+    events:
+      - httpApi:
+          method: post
+          path: /api/tasks/reorder
+
 package:
   patterns:
     - '!src/**'

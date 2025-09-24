@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -55,10 +54,19 @@ class ApiService {
   }
 
   // Get user tasks
-  static Future<List<dynamic>> getTasks() async {
+  static Future<List<dynamic>> getTasks({ String? search, int? limit }) async {
     final token = await storage.read(key: "jwt");
-    final res = await http.get(Uri.parse("$baseUrl/tasks"),
-        headers: {"Authorization": "Bearer $token"});
+
+    final queryParameters = <String, String>{};
+    if (search != null && search.trim().isNotEmpty) {
+      queryParameters['search'] = search.trim();
+    }
+    if (limit != null) {
+      queryParameters['limit'] = limit.toString();
+    }
+    final uri = Uri.parse("$baseUrl/tasks").replace(queryParameters: queryParameters.isEmpty ? null : queryParameters);
+
+    final res = await http.get(uri, headers: {"Authorization": "Bearer $token"});
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     } else {
@@ -137,6 +145,80 @@ class ApiService {
     } catch (e) {
       print("UpdateCompleteStatus error: $e");
       print("Trying to connect to: $baseUrl/tasks/$id");
+      return false;
+    }
+  }
+
+  static Future<Map<String, String>?> getSortPreference() async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.get(Uri.parse("$baseUrl/user/sortPreference"),
+          headers: {"Authorization": "Bearer $token"});
+
+      if (res.statusCode == 200) {
+        final responseJson = jsonDecode(res.body);
+        return {
+          "mode": responseJson['sortMode'],
+          "order": responseJson['sortOrder'],
+        };
+      }
+      return null;
+    } catch (e) {
+      print("GetSortPreference error: $e");
+      print("Trying to connect to: $baseUrl/user/sortPreference");
+      return null;
+    }
+  }
+
+  static Future<List<dynamic>?> updateSortPreference(String mode, String order) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.patch(Uri.parse("$baseUrl/user/sortPreference"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"mode": mode, "order": order}));
+      if(res.statusCode == 200) {
+        print("UpdateSortPreference response: ${res.body}");
+        final responseJson = jsonDecode(res.body);
+        final tasks = responseJson['tasks']; // This is your sorted tasks array
+        print("Sorted tasks: $tasks");
+        return tasks;
+      }
+      return null;
+    } catch (e) {
+      print("UpdateSortPreference error: $e");
+      print("Trying to connect to: $baseUrl/user/sortPreference");
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> moveTask(String id, int newOrderIndex) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.patch(Uri.parse("$baseUrl/tasks/$id/move"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"newIndex": newOrderIndex}));
+      
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body);
+      }
+      return null;
+    } catch (e) {
+      print("MoveTask error: $e");
+      print("Trying to connect to: $baseUrl/tasks/$id/move");
+      return null;
+    }
+  }
+
+  static Future<bool> reorderAllTasks(List<Map<String, dynamic>> tasks) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.post(Uri.parse("$baseUrl/tasks/reorder"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"tasks": tasks}));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("ReorderAllTasks error: $e");
+      print("Trying to connect to: $baseUrl/tasks/reorder");
       return false;
     }
   }
