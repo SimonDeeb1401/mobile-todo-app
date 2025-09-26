@@ -12,8 +12,8 @@ You can try out the first demo version of TaskMate from the GitHub Releases page
 - ✅ **Task Management (CRUD)** – Create, read, update, and delete tasks  
 - 🗂 **Database** – Tasks stored in **MongoDB**
 - 📅 **Deadlines & Completion** – Track task deadlines and completion status
-- 📌 **Task Organization** – Sorting, filtering, and manual reordering *(in progress)*
-- 👥 **Collaboration** – Share and assign tasks, add comments *(planned)*  
+- 📌 **Task Organization** – Sorting, filtering, searching, and manual reordering
+- 👥 **Collaboration** – Share and assign tasks, add comments *(in progress)*  
 - 🔔 **Reminders** – Push notifications for upcoming tasks *(planned)*  
 
 ## 🛠 Tech Stack
