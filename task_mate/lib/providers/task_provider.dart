@@ -87,6 +87,9 @@ class TaskProvider extends ChangeNotifier {
   /// Toggle task completion status
   void toggleTaskCompletion(int index) async {
     if (index >= 0 && index < _tasks.length) {
+      _isAnyTaskMoving = true;
+      notifyListeners();
+
       _tasks[index]['completed'] = !(_tasks[index]['completed'] ?? false);
       notifyListeners();
       // final success = await ApiService.updateCompleteStatus(_tasks[index]['_id'], _tasks[index]['completed']);
@@ -97,6 +100,10 @@ class TaskProvider extends ChangeNotifier {
       await ApiService.updateCompleteStatus(_tasks[index]['_id'], _tasks[index]['completed'], orderIndex: orderIndex);
       notifyListeners();
       await fetchTasksSorted();
+
+      await Future.delayed(const Duration(seconds: 1));
+      _isAnyTaskMoving = false;
+      notifyListeners();
     } else {
       if (kDebugMode) {
         print('Invalid index for toggleTaskCompletion: $index, tasks length: ${_tasks.length}');
