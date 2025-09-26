@@ -210,166 +210,235 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
           );
         },
       )
-      : ReorderableListView.builder(
-        itemCount: tasks.length,
-        onReorder: (oldOrderIndex, newOrderIndex) async {
-          // Validate indices before reordering
-          if (oldOrderIndex < 0 || oldOrderIndex >= tasks.length || 
-              newOrderIndex < 0 || newOrderIndex > tasks.length) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Invalid reorder operation"))
-            );
-            return;
-          }
-          
-          final moved = tasks[oldOrderIndex];
-          
-          // Move task locally with ReorderableListView indices
-          taskProvider.moveTaskLocally(oldOrderIndex, newOrderIndex);
-          
-          try {
-            // For server call, we need the final position after the local move
-            // Calculate the actual final index
-            int finalIndex = newOrderIndex;
-            if (newOrderIndex > oldOrderIndex) {
-              finalIndex = newOrderIndex - 1;
-            }
-            finalIndex = finalIndex.clamp(0, tasks.length - 1);
-
-            await taskProvider.moveTaskOnServer(moved['_id'], finalIndex);
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Failed to reorder tasks"))
-            );
-          }
-        },
-        itemBuilder: (context, index) {
-          final task = tasks[index];
-          return Card(
-            key: ValueKey(task['_id']),
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                children: [
-                  Expanded(
-                  child: Text(
-                    task['title'] ?? '',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    decoration: (task['completed'] ?? false)
-                      ? TextDecoration.lineThrough
-                      : null,
-                    ),
-                  ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      final originalIndex = taskProvider.tasks.indexWhere((t) => t['_id'] == task['_id']);
-                      if (originalIndex != -1) {
-                        taskProvider.toggleTaskCompletion(originalIndex);
-                      }
-                    },
-                    icon: (task['completed'] ?? false)
-                        ? const Icon(Icons.check_circle, color: Colors.green)
-                        : const Icon(Icons.check_circle, color: Colors.grey),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Delete Task'),
-                            content: const Text('Are you sure you want to delete this task?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-                              ),
-                              TextButton(
-                                onPressed: () async {
-                                  await taskProvider.deleteTask(task['_id']);
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
-                          );
-                        },
+      : Stack(
+        children: [
+          AbsorbPointer(
+            absorbing: taskProvider.isAnyTaskMoving, // Disable all touches when loading
+            child: Opacity(
+                opacity: taskProvider.isAnyTaskMoving ? 0.6 : 1.0, // Subtle dimming when disabled
+                child: ReorderableListView.builder(
+                  itemCount: tasks.length,
+                  onReorder: (oldOrderIndex, newOrderIndex) async {
+                    // Validate indices before reordering
+                    if (oldOrderIndex < 0 || oldOrderIndex >= tasks.length || 
+                        newOrderIndex < 0 || newOrderIndex > tasks.length) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Invalid reorder operation"))
                       );
-                    },
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                  ),
-                  IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditTaskScreen(
-                      taskId: task['_id'],
-                      taskTitle: task['title'],
-                      taskDescription: task['description'],
-                      taskDeadline: DateTime.parse(task['deadline']),
-                      taskPriority: task['priority'],
-                      ),
-                    ),
-                    );
+                      return;
+                    }
+                    
+                    final moved = tasks[oldOrderIndex];
+                
+                    // // Calculate global indices in the full task list
+                    // final allTasks = taskProvider.tasks;
+                    // final globalOldIndex = allTasks.indexWhere((task) => task['_id'] == moved['_id']);
+                    
+                    // // For newIndex, we need to find where this position maps in the global list
+                    // int globalNewIndex;
+                    // if (newOrderIndex >= tasks.length) {
+                    //   // Moving to end of this filtered list
+                    //   globalNewIndex = allTasks.length - 1;
+                    // } else {
+                    //   final targetTask = tasks[newOrderIndex > oldOrderIndex ? newOrderIndex - 1 : newOrderIndex];
+                    //   globalNewIndex = allTasks.indexWhere((task) => task['_id'] == targetTask['_id']);
+                    // }
+                
+                    // Move task locally with ReorderableListView indices
+                    taskProvider.moveTaskLocally(oldOrderIndex, newOrderIndex);
+                    
+                    try {
+                      // For server call, we need the final position after the local move
+                      // Calculate the actual final index
+                        int finalIndex = newOrderIndex;
+                        if (newOrderIndex > oldOrderIndex) {
+                          finalIndex = newOrderIndex - 1;
+                        }
+                        finalIndex = finalIndex.clamp(0, tasks.length - 1);
+                
+                      await taskProvider.moveTaskOnServer(moved['_id'], finalIndex);
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Failed to reorder tasks"))
+                      );
+                    }
                   },
-                  icon: const Icon(Icons.edit, color: AppColors.primary),
+                  itemBuilder: (context, index) {
+                    final task = tasks[index];
+                    return Card(
+                      key: ValueKey(task['_id']),
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                          children: [
+                            Expanded(
+                            child: Text(
+                              task['title'] ?? '',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              decoration: (task['completed'] ?? false)
+                                ? TextDecoration.lineThrough
+                                : null,
+                              ),
+                            ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                final originalIndex = taskProvider.tasks.indexWhere((t) => t['_id'] == task['_id']);
+                                if (originalIndex != -1) {
+                                  taskProvider.toggleTaskCompletion(originalIndex);
+                                }
+                              },
+                              icon: (task['completed'] ?? false)
+                                  ? const Icon(Icons.check_circle, color: Colors.green)
+                                  : const Icon(Icons.check_circle, color: Colors.grey),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Delete Task'),
+                                      content: const Text('Are you sure you want to delete this task?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(),
+                                          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            await taskProvider.deleteTask(task['_id']);
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                            ),
+                            IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditTaskScreen(
+                                taskId: task['_id'],
+                                taskTitle: task['title'],
+                                taskDescription: task['description'],
+                                taskDeadline: DateTime.parse(task['deadline']),
+                                taskPriority: task['priority'],
+                                ),
+                              ),
+                              );
+                            },
+                            icon: const Icon(Icons.edit, color: AppColors.primary),
+                            ),
+                          ],
+                          ),
+                          const SizedBox(height: 8),
+                          if (task['description'] != null && task['description'].toString().isNotEmpty)
+                          Text(
+                            task['description'],
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: _getPriorityColor(task['priority'] ?? 'N/A'),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.black),
+                                ),
+                                child: Text(
+                                  'Priority: ${task['priority'] ?? 'N/A'}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: (task['priority'] == 'low') ? Colors.black : Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.black),
+                                ),
+                                child: Text(
+                                  'Deadline: ${task['deadline'] != null ? DateTime.parse(task['deadline']).toLocal().toString().split(' ')[0] : 'N/A'}',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.bodyMedium.copyWith(color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ],
+                          ),
+                        ],
+                      )));
+                    },
                   ),
-                ],
                 ),
-                const SizedBox(height: 8),
-                if (task['description'] != null && task['description'].toString().isNotEmpty)
-                Text(
-                  task['description'],
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _getPriorityColor(task['priority'] ?? 'N/A'),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.black),
+          ),
+
+          if (taskProvider.isAnyTaskMoving)
+            Positioned(
+              top: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary,
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
                       ),
-                      child: Text(
-                        'Priority: ${task['priority'] ?? 'N/A'}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: (task['priority'] == 'low') ? Colors.black : Colors.white,
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.black),
+                      SizedBox(width: 12),
+                      Text(
+                        "Moving task...",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      child: Text(
-                        'Deadline: ${task['deadline'] != null ? DateTime.parse(task['deadline']).toLocal().toString().split(' ')[0] : 'N/A'}',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(color: Colors.black),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
                 ),
-              ],
-            )));
-          },
+              ),
+            ),
+          ]
         ),
       );
   }

@@ -4,9 +4,11 @@ import '../services/api_service.dart';
 class TaskProvider extends ChangeNotifier {
   List<dynamic> _tasks = [];
   bool _isLoading = false;
+  bool _isAnyTaskMoving = false;
 
   List<dynamic> get tasks => _tasks;
   bool get isLoading => _isLoading;
+  bool get isAnyTaskMoving => _isAnyTaskMoving;
 
   void setTasks(List<dynamic> tasks) {
     _tasks = List.from(tasks);
@@ -83,11 +85,18 @@ class TaskProvider extends ChangeNotifier {
   }
 
   /// Toggle task completion status
-  void toggleTaskCompletion(int index) {
+  void toggleTaskCompletion(int index) async {
     if (index >= 0 && index < _tasks.length) {
       _tasks[index]['completed'] = !(_tasks[index]['completed'] ?? false);
       notifyListeners();
-      ApiService.updateCompleteStatus(_tasks[index]['_id'], _tasks[index]['completed']);
+      // final success = await ApiService.updateCompleteStatus(_tasks[index]['_id'], _tasks[index]['completed']);
+      // if (success) {
+      //   await fetchTasksSorted();
+      // }
+      final orderIndex = _tasks[index]['orderIndex'] ?? 0;
+      await ApiService.updateCompleteStatus(_tasks[index]['_id'], _tasks[index]['completed'], orderIndex: orderIndex);
+      notifyListeners();
+      await fetchTasksSorted();
     } else {
       if (kDebugMode) {
         print('Invalid index for toggleTaskCompletion: $index, tasks length: ${_tasks.length}');
@@ -145,7 +154,7 @@ class TaskProvider extends ChangeNotifier {
 
   void moveTaskLocally(int oldOrderIndex, int newOrderIndex){
     // Validate indices before performing operations
-    if (oldOrderIndex < 0 || oldOrderIndex >= _tasks.length) {
+    if (oldOrderIndex < 0 || oldOrderIndex >= _tasks.length || newOrderIndex < 0 || newOrderIndex > _tasks.length) {
       if (kDebugMode) {
         print('Invalid oldOrderIndex: $oldOrderIndex, tasks length: ${_tasks.length}');
       }
@@ -153,32 +162,41 @@ class TaskProvider extends ChangeNotifier {
     }
 
     // Ensure newOrderIndex is within valid bounds for insertion
-    newOrderIndex = newOrderIndex.clamp(0, _tasks.length);
+    //newOrderIndex = newOrderIndex.clamp(0, _tasks.length);
     
     final task = _tasks.removeAt(oldOrderIndex);
     
     // After removal, adjust the insertion index if needed
     final insertIndex = newOrderIndex > oldOrderIndex ? newOrderIndex - 1 : newOrderIndex;
     
-    _tasks.insert(insertIndex.clamp(0, _tasks.length), task);
+    _tasks.insert(insertIndex, task);
     notifyListeners();
   }
 
   Future<void> moveTaskOnServer(String taskId, int newOrderIndex) async {
     try {
-      final moved = await ApiService.moveTask(taskId, newOrderIndex);
-      if (moved == null) {
+      _isAnyTaskMoving = true;
+      notifyListeners();
+
+      final response = await ApiService.moveTask(taskId, newOrderIndex);
+      if (response == null || response['tasks'] == null) {
         if (kDebugMode) {
           print('Failed to move task on server: $taskId to index $newOrderIndex');
         }
         return;
       }
-      
-      await fetchTasksSorted();
+      setTasks(response['tasks']);
+      await Future.delayed(const Duration(seconds: 1));
+      print("Tasks after move from server: $_tasks");
+      //notifyListeners();
+      //await fetchTasksSorted();
     } catch (e) {
       if (kDebugMode) {
         print('Error moving task on server: $e');
       }
+    } finally {
+      _isAnyTaskMoving = false;
+      notifyListeners();
     }
   }
 
