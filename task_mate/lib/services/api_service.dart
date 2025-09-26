@@ -135,12 +135,17 @@ class ApiService {
     }
   }
 
-  static Future<bool> updateCompleteStatus(String id, bool completed) async {
+  static Future<bool> updateCompleteStatus(String id, bool completed, {int? orderIndex}) async {
     try {
       final token = await storage.read(key: "jwt");
+      final responseBody = <String, dynamic>{"completed": completed};
+      if (orderIndex != null) {
+        responseBody["orderIndex"] = orderIndex;
+        print("Updating task $id completion status to $completed with order index $orderIndex");
+      }
       final res = await http.patch(Uri.parse("$baseUrl/tasks/$id"),
           headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
-          body: jsonEncode({"completed": completed}));
+          body: jsonEncode(responseBody));
       return res.statusCode == 200;
     } catch (e) {
       print("UpdateCompleteStatus error: $e");
