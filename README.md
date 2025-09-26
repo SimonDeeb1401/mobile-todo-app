@@ -4,8 +4,8 @@ TaskMate is a personal project: a task management Android application with a sec
 It enables users to create, update, delete, and organize their tasks, while providing features such as deadlines, reminders, and collaboration.  
 
 ## 📲 Download
-You can try out the first demo version of TaskMate from the GitHub Releases page:
-👉 [Download TaskMate APK](https://github.com/SimonDeeb1401/mobile-todo-app/releases/tag/v0.1)
+You can try out the latest demo version of TaskMate from the GitHub Releases page:
+👉 [Download TaskMate APK](https://github.com/SimonDeeb1401/mobile-todo-app/releases/tag/v0.2)
 
 ## ✨ Features
 - 🔐 **Authentication** – User signup/login with **JWT** for secure sessions  
