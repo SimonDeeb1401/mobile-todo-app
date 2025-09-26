@@ -23,6 +23,12 @@ export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
     if (!title) {
       return createResponse(400, { error: "Title is required" });
     }
+
+    const maxOrderTask = await Task.findOne({ user: user.id, completed: false })
+      .sort({ orderIndex: -1 })
+      .select('orderIndex');
+
+    const newOrderIndex = maxOrderTask ? maxOrderTask.orderIndex + STEP : STEP;
     
     const task = new Task({ 
       title, 
@@ -30,7 +36,8 @@ export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
       priority, 
       deadline: deadline ? new Date(deadline) : undefined, 
       completed: completed || false, 
-      user: user.id 
+      user: user.id,
+      orderIndex: newOrderIndex
     });
     
     await task.save();
@@ -66,7 +73,7 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     let tasks;
 
     if (user.sortPreference.mode === "manual") {
-      tasks = await Task.find({ user: user.id }).sort({ orderIndex: 1 });
+      tasks = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 });
     }
 
     else if (user.sortPreference.mode === "priority") {
@@ -137,7 +144,7 @@ export const updateTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
     if (!task) {
       return createResponse(404, { error: "Task not found" });
     }
-    
+
     return createResponse(200, task);
   } catch (err) {
     console.error("Update task error:", err);
@@ -194,7 +201,7 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
       return createResponse(400, { error: "Invalid new index" });
     }
 
-    const allTasksSorted = await Task.find({ user: user.id }).sort({ orderIndex: 1 }).select('_id orderIndex');
+    const allTasksSorted = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
     const ids = allTasksSorted.map(t => String(t._id));
     const currentIndex = ids.indexOf(String(orderedTaskId));
     if (currentIndex === -1) {
@@ -217,7 +224,7 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
       newOrderIndex = Math.floor(nextOrderIndex / 2);
       if(newOrderIndex <= 0){
         await normalizeOrderIndexes(user.id);
-        const updated = await Task.find({ user: user.id }).sort({ orderIndex: 1 }).select('_id orderIndex');
+        const updated = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
         const nextUpdated = updated.find(t => String(t._id) === nextId)!;
         newOrderIndex = Math.floor(nextUpdated.orderIndex / 2);
       }
@@ -234,7 +241,7 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
       }
       else{
         await normalizeOrderIndexes(user.id);
-        const updated = await Task.find({ user: user.id }).sort({ orderIndex: 1 }).select('_id orderIndex');
+        const updated = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
         const prevUpdated = updated.find(t => String(t._id) === prevId)!;
         const nextUpdated = updated.find(t => String(t._id) === nextId)!;
         newOrderIndex = Math.floor((prevUpdated.orderIndex + nextUpdated.orderIndex) / 2);
@@ -244,7 +251,8 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
     await Task.updateOne({_id: orderedTaskId, user: user.id},{ $set: { orderIndex: newOrderIndex }});
 
     const movedTask = await Task.findById(orderedTaskId);
-    return createResponse(200, { success: true, task: movedTask });
+    const allTasksAfterMove = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 });
+    return createResponse(200, { success: true, task: movedTask, tasks: allTasksAfterMove });
   } 
 
   catch (err) {
@@ -281,7 +289,7 @@ export const reorderAllTasks = async (event: LambdaEvent): Promise<LambdaRespons
 };
 
 async function normalizeOrderIndexes(userId: string) {
-  const allTasks = await Task.find({ user: userId }).sort({ orderIndex: 1 }).select('_id');
+  const allTasks = await Task.find({ user: userId }).sort({ completed: 1, orderIndex: 1 }).select('_id');
   const bulkOps = allTasks.map((task, index) => ({
     updateOne: {
       filter: { _id: task._id },

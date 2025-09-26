@@ -67,7 +67,7 @@ export const updateSortPreference = async (event: LambdaEvent): Promise<LambdaRe
     let tasks;
 
     if (updatedUser.sortPreference.mode === "manual") {
-      tasks = await Task.find({ user: user.id }).sort({ orderIndex: 1 });
+      tasks = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 });
     }
 
     else if (updatedUser.sortPreference.mode === "priority") {
