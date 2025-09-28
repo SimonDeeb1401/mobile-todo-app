@@ -6,6 +6,8 @@ It enables users to create, update, delete, and organize their tasks, while prov
 ## 📲 Download
 You can try out the latest demo version of TaskMate from the GitHub Releases page:
 👉 [Download TaskMate APK](https://github.com/SimonDeeb1401/mobile-todo-app/releases/tag/v0.2)
+⚠️ **Note:** This is a pre-release demo build intended for testing and showcasing.  
+Some features may be incomplete or unstable.
 
 ## ✨ Features
 - 🔐 **Authentication** – User signup/login with **JWT** for secure sessions  
