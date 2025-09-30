@@ -6,21 +6,72 @@ import 'dart:async';
 import 'add_task.dart';
 import '../providers/task_provider.dart';
 import 'edit_tasks.dart';
-import 'login_screen.dart';
 import '../theme/app_theme.dart';
 
 class TaskListScreen extends StatefulWidget {
+  //final Function(TaskListScreenController)? onControllerReady;
+
+  //const TaskListScreen({super.key, this.onControllerReady});
+  //final TabController? tabController;
   const TaskListScreen({super.key});
 
   @override
   State<TaskListScreen> createState() => _TaskListScreenState();
 }
 
+// class TaskListScreenController {
+//   final TabController tabController;
+//   final TextEditingController searchController;
+//   final Timer? debounce;
+//   final bool isSearching;
+
+//   final void Function() startSearch;
+//   final void Function() stopSearch;
+//   final void Function(String) onSearchChanged;
+//   final Future<void> Function(String) applySearch;
+//   final void Function(BuildContext context, String currentSort, bool isAscending) showSortDialog;
+//   final Future<Map<String,dynamic>?> Function(BuildContext context,{List<String> initialPriorities, String? initialDeadline}) showFilterBottomSheet;
+
+//   factory TaskListScreenController.fromState(State<TaskListScreen> state) {
+//     state = state as _TaskListScreenState;
+//     return TaskListScreenController(
+//       tabController: state.tabController,
+//       searchController: state.searchController,
+//       debounce: state.debounce,
+//       isSearching: state.isSearching,
+//       startSearch: state._startSearch,
+//       stopSearch: state._stopSearch,
+//       onSearchChanged: state._onSearchChanged,
+//       applySearch: state._applySearch,
+//       showSortDialog: state._showSortDialog,
+//       showFilterBottomSheet: state._showFilterBottomSheet,
+//     );
+//   }
+
+//   TaskListScreenController({
+//     required this.tabController,
+//     required this.searchController,
+//     required this.debounce,
+//     required this.isSearching,
+//     required this.startSearch,
+//     required this.stopSearch,
+//     required this.onSearchChanged,
+//     required this.applySearch,
+//     required this.showSortDialog,
+//     required this.showFilterBottomSheet,
+//   });
+// }
+
 class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   bool _isSearching = false;
+
+  TabController get tabController => _tabController;
+  TextEditingController get searchController => _searchController;
+  Timer? get debounce => _debounce;
+  bool get isSearching => _isSearching;
   
   @override
   void initState() {
@@ -28,6 +79,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     _tabController = TabController(length: 2, vsync: this);
     // Fetch tasks when the screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<TaskProvider>(context, listen: false).setTabController(_tabController);
       Provider.of<TaskProvider>(context, listen: false).fetchTasks();
     });
   }
@@ -443,341 +495,343 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
       );
   }
 
-  void _showSortDialog(BuildContext context, String currentSort, bool isAscending) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        late String selectedSort = currentSort;
-        late bool ascending = isAscending;
+  // void showSortDialog(BuildContext context, String currentSort, bool isAscending) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       late String selectedSort = currentSort;
+  //       late bool ascending = isAscending;
 
-        return AlertDialog(
-          title: const Text("Sort Tasks"),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  RadioListTile<String>(
-                    title: const Text("Priority"),
-                    value: "priority",
-                    groupValue: selectedSort,
-                    onChanged: (value) {
-                      setState(() => selectedSort = value!);
-                    },
-                  ),
-                  RadioListTile<String>(
-                    title: const Text("Deadline"),
-                    value: "deadline",
-                    groupValue: selectedSort,
-                    onChanged: (value) {
-                      setState(() => selectedSort = value!);
-                    },
-                  ),
-                  RadioListTile<String>(
-                    title: const Text("Creation Date"),
-                    value: "createdAt",
-                    groupValue: selectedSort,
-                    onChanged: (value) {
-                      setState(() => selectedSort = value!);
-                    },
-                  ),
-                  RadioListTile<String>(
-                    title: const Text("Manual Order"),
-                    value: "manual",
-                    groupValue: selectedSort,
-                    onChanged: (value) {
-                      setState(() => selectedSort = value!);
-                    },
-                  ),
+  //       return AlertDialog(
+  //         title: const Text("Sort Tasks"),
+  //         content: StatefulBuilder(
+  //           builder: (context, setState) {
+  //             return Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 RadioListTile<String>(
+  //                   title: const Text("Priority"),
+  //                   value: "priority",
+  //                   groupValue: selectedSort,
+  //                   onChanged: (value) {
+  //                     setState(() => selectedSort = value!);
+  //                   },
+  //                 ),
+  //                 RadioListTile<String>(
+  //                   title: const Text("Deadline"),
+  //                   value: "deadline",
+  //                   groupValue: selectedSort,
+  //                   onChanged: (value) {
+  //                     setState(() => selectedSort = value!);
+  //                   },
+  //                 ),
+  //                 RadioListTile<String>(
+  //                   title: const Text("Creation Date"),
+  //                   value: "createdAt",
+  //                   groupValue: selectedSort,
+  //                   onChanged: (value) {
+  //                     setState(() => selectedSort = value!);
+  //                   },
+  //                 ),
+  //                 RadioListTile<String>(
+  //                   title: const Text("Manual Order"),
+  //                   value: "manual",
+  //                   groupValue: selectedSort,
+  //                   onChanged: (value) {
+  //                     setState(() => selectedSort = value!);
+  //                   },
+  //                 ),
 
                   
-                  const Divider(),
+  //                 const Divider(),
 
-                  SwitchListTile(
-                    title: const Text("Ascending Order"),
-                    value: ascending,
-                    onChanged: (value) {
-                      setState(() => ascending = value);
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: const Text("Apply"),
-              onPressed: () async {
-                // Call your API to update user preference
-                final tasks = await Provider.of<UserProvider>(context, listen: false).updateSortPreference(context,selectedSort, ascending ? "asc" : "desc");
-                if (tasks != null) {
-                  Provider.of<TaskProvider>(context, listen: false).setTasks(tasks);
-                }
-                if (context.mounted) Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  //                 SwitchListTile(
+  //                   title: const Text("Ascending Order"),
+  //                   value: ascending,
+  //                   onChanged: (value) {
+  //                     setState(() => ascending = value);
+  //                   },
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+  //             onPressed: () => Navigator.of(context).pop(),
+  //           ),
+  //           TextButton(
+  //             child: const Text("Apply"),
+  //             onPressed: () async {
+  //               // Call your API to update user preference
+  //               final tasks = await Provider.of<UserProvider>(context, listen: false).updateSortPreference(context,selectedSort, ascending ? "asc" : "desc");
+  //               if (tasks != null) {
+  //                 Provider.of<TaskProvider>(context, listen: false).setTasks(tasks);
+  //               }
+  //               if (context.mounted) Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
-  Future<Map<String,dynamic>?> _showFilterBottomSheet(BuildContext context,{List<String> initialPriorities = const [], String? initialDeadline}) {
-    return showModalBottomSheet<Map<String,dynamic>>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        List<String> selectedPriorities = List.from(initialPriorities);
-        String? selectedDueDate = initialDeadline;
-        final List<String> dueDateOptions = ["Today", "This Week", "This Month", "Custom"];
+  // Future<Map<String,dynamic>?> showFilterBottomSheet(BuildContext context,{List<String> initialPriorities = const [], String? initialDeadline}) {
+  //   return showModalBottomSheet<Map<String,dynamic>>(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (context) {
+  //       List<String> selectedPriorities = List.from(initialPriorities);
+  //       String? selectedDueDate = initialDeadline;
+  //       final List<String> dueDateOptions = ["Today", "This Week", "This Month", "Custom"];
 
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Filter Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
+  //       return StatefulBuilder(
+  //         builder: (context, setState) {
+  //           return Padding(
+  //             padding: EdgeInsets.only(
+  //               left: 16,
+  //               right: 16,
+  //               top: 16,
+  //               bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+  //             ),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     const Text("Filter Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+  //                     IconButton(
+  //                       icon: const Icon(Icons.close),
+  //                       onPressed: () => Navigator.pop(context),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 12),
 
-                  // Priority filter
-                  const Text("Priority", style: TextStyle(fontWeight: FontWeight.w600)),
-                  Wrap(
-                    spacing: 8,
-                    children: ["High", "Medium", "Low"].map((priority) {
-                      return FilterChip(
-                        label: Text(priority),
-                        backgroundColor: _getPriorityColor(priority.toLowerCase())?.withOpacity(0.2),
-                        selected: selectedPriorities.contains(priority),
-                        onSelected: (bool value) {
-                          setState(() {
-                            if (value) {
-                              selectedPriorities.add(priority);
-                            } else {
-                              selectedPriorities.remove(priority);
-                            }
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 20),
+  //                 // Priority filter
+  //                 const Text("Priority", style: TextStyle(fontWeight: FontWeight.w600)),
+  //                 Wrap(
+  //                   spacing: 8,
+  //                   children: ["High", "Medium", "Low"].map((priority) {
+  //                     return FilterChip(
+  //                       label: Text(priority),
+  //                       backgroundColor: _getPriorityColor(priority.toLowerCase())?.withOpacity(0.2),
+  //                       selected: selectedPriorities.contains(priority),
+  //                       onSelected: (bool value) {
+  //                         setState(() {
+  //                           if (value) {
+  //                             selectedPriorities.add(priority);
+  //                           } else {
+  //                             selectedPriorities.remove(priority);
+  //                           }
+  //                         });
+  //                       },
+  //                     );
+  //                   }).toList(),
+  //                 ),
+  //                 const SizedBox(height: 20),
 
-                  // Deadline filter
-                  const Text("Deadline", style: TextStyle(fontWeight: FontWeight.w600)),
-                  Wrap(
-                    spacing: 8,
-                    children: dueDateOptions.map((option) {
-                      return ChoiceChip(
-                        label: Text(option),
-                        selected: option == "Custom" 
-                          ? (selectedDueDate != null && 
-                            !["Today", "This Week", "This Month"].contains(selectedDueDate))
-                          : selectedDueDate == option,
-                        onSelected: (bool value) async {
-                          if (option == "Custom" && value) {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime(2100),
-                            );
-                            if (picked != null) {
-                              setState(() => selectedDueDate = picked.toIso8601String());
-                            }
-                          } else {
-                            setState(() => selectedDueDate = value ? option : null);
-                          }
-                        },
-                      );
-                    }).toList(),
-                  ),
+  //                 // Deadline filter
+  //                 const Text("Deadline", style: TextStyle(fontWeight: FontWeight.w600)),
+  //                 Wrap(
+  //                   spacing: 8,
+  //                   children: dueDateOptions.map((option) {
+  //                     return ChoiceChip(
+  //                       label: Text(option),
+  //                       selected: option == "Custom" 
+  //                         ? (selectedDueDate != null && 
+  //                           !["Today", "This Week", "This Month"].contains(selectedDueDate))
+  //                         : selectedDueDate == option,
+  //                       onSelected: (bool value) async {
+  //                         if (option == "Custom" && value) {
+  //                           final picked = await showDatePicker(
+  //                             context: context,
+  //                             initialDate: DateTime.now(),
+  //                             firstDate: DateTime(2020),
+  //                             lastDate: DateTime(2100),
+  //                           );
+  //                           if (picked != null) {
+  //                             setState(() => selectedDueDate = picked.toIso8601String());
+  //                           }
+  //                         } else {
+  //                           setState(() => selectedDueDate = value ? option : null);
+  //                         }
+  //                       },
+  //                     );
+  //                   }).toList(),
+  //                 ),
 
-                  const Divider(),
+  //                 const Divider(),
 
-                  // Actions
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        child: const Text("Reset", style: TextStyle(color: Colors.red)),
-                        onPressed: () async {
-                          await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
-                          setState(() {
-                            selectedPriorities.clear();
-                            selectedDueDate = null;
-                          });
-                          Navigator.pop(context, {
-                            "priorities": selectedPriorities,
-                            "deadline": selectedDueDate,
-                          });
-                        },
-                      ),
-                      TextButton(
-                        child: const Text("Apply"),
-                        onPressed: () async {
-                          final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-                          await taskProvider.fetchTasksSorted();
-                          String? filterDeadline = switch (selectedDueDate) {
-                            "Today" => DateTime.now().toIso8601String().split('T')[0],
-                            "This Week" => DateTime.now().add(Duration(days: 7 - DateTime.now().weekday)).toIso8601String().split('T')[0],
-                            "This Month" => DateTime(DateTime.now().year, DateTime.now().month + 1).toIso8601String().split('T')[0],
-                            null => null,
-                            _ => selectedDueDate?.split('T')[0], // Custom date
-                          };
-                          taskProvider.setTasks(taskProvider.tasks.where((task) => (selectedPriorities.isEmpty || (task['priority'] != null && 
-                            selectedPriorities.contains(task['priority'].toString()[0].toUpperCase() + task['priority'].toString().substring(1)))) && 
-                            (filterDeadline == null || DateTime.parse(task['deadline'].toString().split('T')[0]).compareTo(DateTime.parse(filterDeadline)) <= 0)).toList());
-                          Navigator.pop(context, {
-                            "priorities": selectedPriorities,
-                            "deadline": selectedDueDate,
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }
-        );
-      }
-    );
-  }
+  //                 // Actions
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     TextButton(
+  //                       child: const Text("Reset", style: TextStyle(color: Colors.red)),
+  //                       onPressed: () async {
+  //                         await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
+  //                         setState(() {
+  //                           selectedPriorities.clear();
+  //                           selectedDueDate = null;
+  //                         });
+  //                         Navigator.pop(context, {
+  //                           "priorities": selectedPriorities,
+  //                           "deadline": selectedDueDate,
+  //                         });
+  //                       },
+  //                     ),
+  //                     TextButton(
+  //                       child: const Text("Apply"),
+  //                       onPressed: () async {
+  //                         final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+  //                         await taskProvider.fetchTasksSorted();
+  //                         String? filterDeadline = switch (selectedDueDate) {
+  //                           "Today" => DateTime.now().toIso8601String().split('T')[0],
+  //                           "This Week" => DateTime.now().add(Duration(days: 7 - DateTime.now().weekday)).toIso8601String().split('T')[0],
+  //                           "This Month" => DateTime(DateTime.now().year, DateTime.now().month + 1).toIso8601String().split('T')[0],
+  //                           null => null,
+  //                           _ => selectedDueDate?.split('T')[0], // Custom date
+  //                         };
+  //                         taskProvider.setTasks(taskProvider.tasks.where((task) => (selectedPriorities.isEmpty || (task['priority'] != null && 
+  //                           selectedPriorities.contains(task['priority'].toString()[0].toUpperCase() + task['priority'].toString().substring(1)))) && 
+  //                           (filterDeadline == null || DateTime.parse(task['deadline'].toString().split('T')[0]).compareTo(DateTime.parse(filterDeadline)) <= 0)).toList());
+  //                         Navigator.pop(context, {
+  //                           "priorities": selectedPriorities,
+  //                           "deadline": selectedDueDate,
+  //                         });
+  //                       },
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         }
+  //       );
+  //     }
+  //   );
+  // }
 
-  void _startSearch() {
-    setState(() => _isSearching = true);
-  }
+  // void startSearch() {
+  //   setState(() => _isSearching = true);
+  // }
 
-  void _stopSearch() {
-    _searchController.clear();
-    _applySearch("");
-    setState(() => _isSearching = false);
-  }
+  // void stopSearch() {
+  //   _searchController.clear();
+  //   applySearch("");
+  //   setState(() => _isSearching = false);
+  // }
 
-  void _onSearchChanged(String q) {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      _applySearch(q);
-    });
-  }
+  // void onSearchChanged(String q) {
+  //   _debounce?.cancel();
+  //   _debounce = Timer(const Duration(milliseconds: 300), () {
+  //     applySearch(q);
+  //   });
+  // }
 
-  Future<void> _applySearch(String q) async {
-    final trimmed = q.trim();
-    if (trimmed.length >= 2) {
-      await Provider.of<TaskProvider>(context, listen: false).fetchSearchResults(search: trimmed);
-    } else if (trimmed.isEmpty) {
-      await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
-    }
-  }
+  // Future<void> applySearch(String q) async {
+  //   final trimmed = q.trim();
+  //   if (trimmed.length >= 2) {
+  //     await Provider.of<TaskProvider>(context, listen: false).fetchSearchResults(search: trimmed);
+  //   } else if (trimmed.isEmpty) {
+  //     await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<UserProvider, TaskProvider>(
-      builder: (context, userProvider, taskProvider, child) {
+    return Consumer<TaskProvider>(
+      builder: (context, taskProvider, child) {
         final tasks = taskProvider.tasks;
         // Filter tasks into completed and incomplete
         List<Map<String, dynamic>> incompleteTasks = tasks.where((task) => !(task['completed'] ?? false)).cast<Map<String, dynamic>>().toList();
         List<Map<String, dynamic>> completedTasks = tasks.where((task) => task['completed'] ?? false).cast<Map<String, dynamic>>().toList();
 
-        final currentSort = userProvider.mode;
-        final isAscending = userProvider.order == "asc";
+        //taskProvider.setTabController(_tabController);
+
+        // final currentSort = userProvider.mode;
+        // final isAscending = userProvider.order == "asc";
         return Scaffold(
-          appBar: AppBar(
-            title: !_isSearching 
-              ? Text('My Tasks', style: AppTextStyles.heading3.copyWith(color: AppColors.primary))
-              : TextField(
-                  controller: _searchController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: 'Search tasks...',
-                    border: InputBorder.none,
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.cancel, color: Colors.grey),
-                      onPressed: () {
-                        _searchController.clear();
-                        _applySearch("");
-                      },
-                    )
-                  ),
-                  onChanged: _onSearchChanged,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (v) => _applySearch(v),
-                ),
-            automaticallyImplyLeading: false,
-            actions: [
-              !_isSearching
-                ? IconButton(icon: const Icon(Icons.search, color: AppColors.primary), onPressed: _startSearch)
-                : IconButton(icon: const Icon(Icons.close, color: AppColors.primary), onPressed: _stopSearch),
-              IconButton(
-                icon: const Icon(Icons.tune, color: AppColors.primary),
-                onPressed: () {
-                  // Open filter bottom sheet
-                  _showFilterBottomSheet(context, initialPriorities: [], initialDeadline: null);
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.swap_vert, color: AppColors.primary),
-                onPressed: () {
-                  // Open sort dialog
-                  _showSortDialog(context, currentSort, isAscending);
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.logout, color: AppColors.primary),
-                onPressed: () async {
-                  final success = await ApiService.logout();
-                  if (success) {
-                    if (!mounted) return;
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    );
-                  } else {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logout failed. Please try again.')),
-                    );
-                  }
-                },
-              ),
-            ],
-            bottom: TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(
-                  text: 'Pending (${incompleteTasks.length})',
-                  icon: const Icon(Icons.pending_actions),
-                ),
-                Tab(
-                  text: 'Completed (${completedTasks.length})',
-                  icon: const Icon(Icons.check_circle),
-                ),
-              ],
-            ),
-          ),
+          // appBar: AppBar(
+          //   title: !_isSearching 
+          //     ? Text('My Tasks', style: AppTextStyles.heading3.copyWith(color: AppColors.primary))
+          //     : TextField(
+          //         controller: _searchController,
+          //         autofocus: true,
+          //         decoration: InputDecoration(
+          //           hintText: 'Search tasks...',
+          //           border: InputBorder.none,
+          //           suffixIcon: IconButton(
+          //             icon: Icon(Icons.cancel, color: Colors.grey),
+          //             onPressed: () {
+          //               _searchController.clear();
+          //               _applySearch("");
+          //             },
+          //           )
+          //         ),
+          //         onChanged: _onSearchChanged,
+          //         textInputAction: TextInputAction.search,
+          //         onSubmitted: (v) => _applySearch(v),
+          //       ),
+          //   automaticallyImplyLeading: false,
+          //   actions: [
+          //     !_isSearching
+          //       ? IconButton(icon: const Icon(Icons.search, color: AppColors.primary), onPressed: _startSearch)
+          //       : IconButton(icon: const Icon(Icons.close, color: AppColors.primary), onPressed: _stopSearch),
+          //     IconButton(
+          //       icon: const Icon(Icons.tune, color: AppColors.primary),
+          //       onPressed: () {
+          //         // Open filter bottom sheet
+          //         _showFilterBottomSheet(context, initialPriorities: [], initialDeadline: null);
+          //       },
+          //     ),
+          //     IconButton(
+          //       icon: const Icon(Icons.swap_vert, color: AppColors.primary),
+          //       onPressed: () {
+          //         // Open sort dialog
+          //         _showSortDialog(context, currentSort, isAscending);
+          //       },
+          //     ),
+          //     IconButton(
+          //       icon: const Icon(Icons.logout, color: AppColors.primary),
+          //       onPressed: () async {
+          //         final success = await ApiService.logout();
+          //         if (success) {
+          //           if (!mounted) return;
+          //           Navigator.of(context).pushReplacement(
+          //             MaterialPageRoute(builder: (context) => const LoginScreen()),
+          //           );
+          //         } else {
+          //           if (!mounted) return;
+          //           ScaffoldMessenger.of(context).showSnackBar(
+          //             const SnackBar(content: Text('Logout failed. Please try again.')),
+          //           );
+          //         }
+          //       },
+          //     ),
+          //   ],
+          //   bottom: TabBar(
+          //     controller: _tabController,
+          //     tabs: [
+          //       Tab(
+          //         text: 'Pending (${incompleteTasks.length})',
+          //         icon: const Icon(Icons.pending_actions),
+          //       ),
+          //       Tab(
+          //         text: 'Completed (${completedTasks.length})',
+          //         icon: const Icon(Icons.check_circle),
+          //       ),
+          //     ],
+          //   ),
+          // ),
           body: taskProvider.isLoading
               ? const Center(child: CircularProgressIndicator())
               : taskProvider.tasks.isEmpty

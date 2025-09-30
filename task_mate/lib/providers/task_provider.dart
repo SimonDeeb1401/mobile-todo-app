@@ -1,18 +1,36 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'package:provider/provider.dart';
+import 'package:task_mate/providers/user_provider.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 
 class TaskProvider extends ChangeNotifier {
   List<dynamic> _tasks = [];
   bool _isLoading = false;
   bool _isAnyTaskMoving = false;
+  TabController? _tabController;
+  TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  bool _isSearching = false;
 
   List<dynamic> get tasks => _tasks;
   bool get isLoading => _isLoading;
   bool get isAnyTaskMoving => _isAnyTaskMoving;
+  TabController? get tabController => _tabController;
+  TextEditingController get searchController => _searchController;
+  Timer? get debounce => _debounce;
+  bool get isSearching => _isSearching;
 
   void setTasks(List<dynamic> tasks) {
     _tasks = List.from(tasks);
     notifyListeners();
+  }
+
+  void setTabController(TabController controller) {
+    _tabController = controller;
+    //notifyListeners();
   }
 
   Future<void> fetchTasksSorted() async {
@@ -211,5 +229,271 @@ class TaskProvider extends ChangeNotifier {
     await fetchTasksSorted();
     setTasks(_tasks.where((task) => task['title'].toString().toLowerCase().contains(search.toLowerCase()) || task['description'].toString().toLowerCase().contains(search.toLowerCase())).toList());
     notifyListeners();
+  }
+
+  Color? _getPriorityColor(String priority) {
+    switch (priority) {
+      case 'high':
+        return Colors.red;
+      case 'medium':
+        return Colors.orange;
+      case 'low':
+        return Colors.lightGreenAccent;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  void showSortDialog(BuildContext context, String currentSort, bool isAscending) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        late String selectedSort = currentSort;
+        late bool ascending = isAscending;
+
+        return AlertDialog(
+          title: const Text("Sort Tasks"),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<String>(
+                    title: const Text("Priority"),
+                    value: "priority",
+                    groupValue: selectedSort,
+                    onChanged: (value) {
+                      setState(() => selectedSort = value!);
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Deadline"),
+                    value: "deadline",
+                    groupValue: selectedSort,
+                    onChanged: (value) {
+                      setState(() => selectedSort = value!);
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Creation Date"),
+                    value: "createdAt",
+                    groupValue: selectedSort,
+                    onChanged: (value) {
+                      setState(() => selectedSort = value!);
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Manual Order"),
+                    value: "manual",
+                    groupValue: selectedSort,
+                    onChanged: (value) {
+                      setState(() => selectedSort = value!);
+                    },
+                  ),
+
+                  
+                  const Divider(),
+
+                  SwitchListTile(
+                    title: const Text("Ascending Order"),
+                    value: ascending,
+                    onChanged: (value) {
+                      setState(() => ascending = value);
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text("Apply"),
+              onPressed: () async {
+                // Call your API to update user preference
+                final tasks = await Provider.of<UserProvider>(context, listen: false).updateSortPreference(context,selectedSort, ascending ? "asc" : "desc");
+                if (tasks != null) {
+                  Provider.of<TaskProvider>(context, listen: false).setTasks(tasks);
+                }
+                if (context.mounted) Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<Map<String,dynamic>?> showFilterBottomSheet(BuildContext context,{List<String> initialPriorities = const [], String? initialDeadline}) {
+    return showModalBottomSheet<Map<String,dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        List<String> selectedPriorities = List.from(initialPriorities);
+        String? selectedDueDate = initialDeadline;
+        final List<String> dueDateOptions = ["Today", "This Week", "This Month", "Custom"];
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Filter Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Priority filter
+                  const Text("Priority", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Wrap(
+                    spacing: 8,
+                    children: ["High", "Medium", "Low"].map((priority) {
+                      return FilterChip(
+                        label: Text(priority),
+                        backgroundColor: _getPriorityColor(priority.toLowerCase())?.withOpacity(0.2),
+                        selected: selectedPriorities.contains(priority),
+                        onSelected: (bool value) {
+                          setState(() {
+                            if (value) {
+                              selectedPriorities.add(priority);
+                            } else {
+                              selectedPriorities.remove(priority);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Deadline filter
+                  const Text("Deadline", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Wrap(
+                    spacing: 8,
+                    children: dueDateOptions.map((option) {
+                      return ChoiceChip(
+                        label: Text(option),
+                        selected: option == "Custom" 
+                          ? (selectedDueDate != null && 
+                            !["Today", "This Week", "This Month"].contains(selectedDueDate))
+                          : selectedDueDate == option,
+                        onSelected: (bool value) async {
+                          if (option == "Custom" && value) {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              setState(() => selectedDueDate = picked.toIso8601String());
+                            }
+                          } else {
+                            setState(() => selectedDueDate = value ? option : null);
+                          }
+                        },
+                      );
+                    }).toList(),
+                  ),
+
+                  const Divider(),
+
+                  // Actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        child: const Text("Reset", style: TextStyle(color: Colors.red)),
+                        onPressed: () async {
+                          await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
+                          setState(() {
+                            selectedPriorities.clear();
+                            selectedDueDate = null;
+                          });
+                          Navigator.pop(context, {
+                            "priorities": selectedPriorities,
+                            "deadline": selectedDueDate,
+                          });
+                        },
+                      ),
+                      TextButton(
+                        child: const Text("Apply"),
+                        onPressed: () async {
+                          final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+                          await taskProvider.fetchTasksSorted();
+                          String? filterDeadline = switch (selectedDueDate) {
+                            "Today" => DateTime.now().toIso8601String().split('T')[0],
+                            "This Week" => DateTime.now().add(Duration(days: 7 - DateTime.now().weekday)).toIso8601String().split('T')[0],
+                            "This Month" => DateTime(DateTime.now().year, DateTime.now().month + 1).toIso8601String().split('T')[0],
+                            null => null,
+                            _ => selectedDueDate?.split('T')[0], // Custom date
+                          };
+                          taskProvider.setTasks(taskProvider.tasks.where((task) => (selectedPriorities.isEmpty || (task['priority'] != null && 
+                            selectedPriorities.contains(task['priority'].toString()[0].toUpperCase() + task['priority'].toString().substring(1)))) && 
+                            (filterDeadline == null || DateTime.parse(task['deadline'].toString().split('T')[0]).compareTo(DateTime.parse(filterDeadline)) <= 0)).toList());
+                          Navigator.pop(context, {
+                            "priorities": selectedPriorities,
+                            "deadline": selectedDueDate,
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }
+        );
+      }
+    );
+  }
+
+  void startSearch() {
+    _isSearching = true;
+    notifyListeners();
+  }
+
+  void stopSearch(BuildContext context) {
+    _searchController.clear();
+    applySearch(context, "");
+    _isSearching = false;
+    notifyListeners();
+  }
+
+  void onSearchChanged(BuildContext context, String q) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      applySearch(context, q);
+    });
+  }
+
+  Future<void> applySearch(BuildContext context, String q) async {
+    final trimmed = q.trim();
+    if (trimmed.length >= 2) {
+      await Provider.of<TaskProvider>(context, listen: false).fetchSearchResults(search: trimmed);
+    } else if (trimmed.isEmpty) {
+      await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
+    }
   }
 }

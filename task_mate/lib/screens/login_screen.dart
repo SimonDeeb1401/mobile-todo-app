@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:task_mate/screens/bottom_navigation_bar.dart';
 import '../services/api_service.dart';
-import 'tasks_screen.dart';
 import 'signup_screen.dart';
 import '../theme/app_theme.dart';
 
@@ -21,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await ApiService.login(emailController.text, passwordController.text);
     setState(() => isLoading = false);
     if (success) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => TaskListScreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => BottomNavigationBarScreen()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Wrong email or password")));
     }
