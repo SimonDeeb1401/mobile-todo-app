@@ -68,6 +68,8 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
   Timer? _debounce;
   bool _isSearching = false;
 
+  TaskProvider? _taskProvider;
+
   TabController get tabController => _tabController;
   TextEditingController get searchController => _searchController;
   Timer? get debounce => _debounce;
@@ -79,13 +81,21 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     _tabController = TabController(length: 2, vsync: this);
     // Fetch tasks when the screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<TaskProvider>(context, listen: false).setTabController(_tabController);
-      Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+      // _taskProvider?.fetchTasks();
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    _taskProvider?.setTabController(_tabController);
+    _taskProvider?.fetchTasks();
+  }
+
+  @override
   void dispose() {
+    _taskProvider?.clearTabController();
     _tabController.dispose();
     _debounce?.cancel();
     _searchController.dispose();

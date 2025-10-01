@@ -33,6 +33,11 @@ class TaskProvider extends ChangeNotifier {
     //notifyListeners();
   }
 
+  void clearTabController() {
+  _tabController = null;
+  //notifyListeners(); // Uncomment if needed for UI updates
+}
+
   Future<void> fetchTasksSorted() async {
     try {
       final sortPreference = await ApiService.getSortPreference();
@@ -54,7 +59,7 @@ class TaskProvider extends ChangeNotifier {
   /// Fetch tasks from API
   Future<void> fetchTasks() async {
     _isLoading = true;
-    notifyListeners();
+    //notifyListeners();
 
     try {
       final data = await ApiService.getTasks();
