@@ -81,7 +81,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     _tabController = TabController(length: 2, vsync: this);
     // Fetch tasks when the screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // _taskProvider?.fetchTasks();
+      _taskProvider?.fetchTasks();
     });
   }
 
@@ -90,7 +90,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     super.didChangeDependencies();
     _taskProvider = Provider.of<TaskProvider>(context, listen: false);
     _taskProvider?.setTabController(_tabController);
-    _taskProvider?.fetchTasks();
+    //_taskProvider?.fetchTasks();
   }
 
   @override

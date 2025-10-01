@@ -59,7 +59,7 @@ class TaskProvider extends ChangeNotifier {
   /// Fetch tasks from API
   Future<void> fetchTasks() async {
     _isLoading = true;
-    //notifyListeners();
+    notifyListeners();
 
     try {
       final data = await ApiService.getTasks();

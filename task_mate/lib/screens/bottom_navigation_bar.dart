@@ -151,11 +151,11 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> w
             showUnselectedLabels: true,
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.list, color: AppColors.primary),
+                icon: Icon(Icons.list),
                 label: 'Tasks',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person, color: AppColors.primary),
+                icon: Icon(Icons.person),
                 label: 'Profile',
               )
             ],
