@@ -1,13 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 import '../theme/app_theme.dart';
 import 'login_screen.dart';
 import '../services/api_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    await userProvider.fetchUserProfile();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     return Scaffold(
       body: Center(
         child: Card(
@@ -28,15 +47,15 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  "John Doe",
+                  userProvider.name ?? "",
                   style: AppTextStyles.heading2,
                 ),
                 const SizedBox(height: 8),
-                Text("Email: johndoe@example.com", style: AppTextStyles.bodyLarge),
+                Text("Email: ${userProvider.email ?? ""}", style: AppTextStyles.bodyLarge),
                 const SizedBox(height: 8),
-                Text("Age: 23", style: AppTextStyles.bodyLarge),
+                Text("Age: ${userProvider.age ?? 0}", style: AppTextStyles.bodyLarge),
                 const SizedBox(height: 8),
-                Text("Occupation: Student", style: AppTextStyles.bodyLarge),
+                Text("Occupation: ${userProvider.occupation ?? ""}", style: AppTextStyles.bodyLarge),
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,

@@ -3,9 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class UserProvider with ChangeNotifier {
+  String? _name;
+  int? _age;
+  String? _occupation;
+  String? _email;
   String _mode = "createdAt"; // Default sort mode
   String _order = "asc"; // Default sort order
 
+  String? get name => _name;
+  int? get age => _age;
+  String? get occupation => _occupation;
+  String? get email => _email;
   String get mode => _mode;
   String get order => _order;
 
@@ -13,6 +21,23 @@ class UserProvider with ChangeNotifier {
     _fetchSortPreference();
   }
   
+  Future<void> fetchUserProfile() async {
+    try {
+      final profile = await ApiService.getUserProfile();
+      if (profile != null) {
+        _name = profile['name'];
+        _age = profile['age'];
+        _occupation = profile['occupation'];
+        _email = profile['email'];
+        notifyListeners();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching user profile: $e');
+      }
+    }
+  }
+
   Future<void> _fetchSortPreference() async {
     try {
       final pref = await ApiService.getSortPreference();

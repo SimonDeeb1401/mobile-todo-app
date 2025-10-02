@@ -11,13 +11,16 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final nameController = TextEditingController();
+  final ageController = TextEditingController();
+  final occupationController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool isLoading = false;
 
   void signup() async {
     setState(() => isLoading = true);
-    final success = await ApiService.signup(emailController.text, passwordController.text);
+    final success = await ApiService.signup(emailController.text, passwordController.text, nameController.text, int.tryParse(ageController.text) ?? 0, occupationController.text);
     setState(() => isLoading = false);
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -65,6 +68,69 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 SizedBox(height: 40),
 
+                // Name Input
+                Container(
+                  decoration: AppDecorations.inputFieldDecoration,
+                  child: TextField(
+                    controller: nameController,
+                    keyboardType: TextInputType.name,
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                      prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                // Age Input
+                Container(
+                  decoration: AppDecorations.inputFieldDecoration,
+                  child: TextField(
+                    controller: ageController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: "Age",
+                      prefixIcon: Icon(Icons.numbers, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+
+                // Occupation Input
+                Container(
+                  decoration: AppDecorations.inputFieldDecoration,
+                  child: TextField(
+                    controller: occupationController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: "Occupation",
+                      prefixIcon: Icon(Icons.work, color: AppColors.primary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+
                 // Email Input
                 Container(
                   decoration: AppDecorations.inputFieldDecoration,
@@ -83,7 +149,6 @@ class _SignupScreenState extends State<SignupScreen> {
                       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     ),
                   ),
-                  
                 ),
                 SizedBox(height: 20),
 
