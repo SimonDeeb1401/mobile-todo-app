@@ -10,11 +10,11 @@ String get baseUrl {
 
 class ApiService {
   // Signup
-  static Future<bool> signup(String email, String password) async {
+  static Future<bool> signup(String email, String password, String name, int age, String occupation) async {
     try {
       final res = await http.post(Uri.parse("$baseUrl/auth/signup"),
           headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"email": email, "password": password}));
+          body: jsonEncode({"email": email, "password": password, "name": name, "age": age, "occupation": occupation}));
       return res.statusCode == 201;
     } catch (e) {
       print("Signup error: $e");
@@ -151,6 +151,27 @@ class ApiService {
       print("UpdateCompleteStatus error: $e");
       print("Trying to connect to: $baseUrl/tasks/$id");
       return false;
+    }
+  }
+
+  static Future<Map<dynamic, dynamic>?> getUserProfile() async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.get(Uri.parse("$baseUrl/user/profile"),
+          headers: {"Authorization": "Bearer $token"});
+      if (res.statusCode == 200) {
+        final responseJson = jsonDecode(res.body);
+        return {
+          "name": responseJson['name'],
+          "age": responseJson['age'],
+          "occupation": responseJson['occupation'],
+        };
+      }
+      return null;
+    } catch (e) {
+      print("GetUserProfile error: $e");
+      print("Trying to connect to: $baseUrl/user/profile");
+      return null;
     }
   }
 

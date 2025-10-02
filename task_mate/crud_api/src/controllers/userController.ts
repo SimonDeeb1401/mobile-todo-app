@@ -6,6 +6,38 @@ import mongoose, { get } from "mongoose";
 import { getTasks } from "./taskController.js";
 import Task from "../models/Task.js";
 
+// Get user profile for logged-in user
+export const getUserProfile = async (event: LambdaEvent): Promise<LambdaResponse> => {
+  try {
+    await connectToDatabase();
+
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
+
+    const user = authResult.user;
+
+    // Find the user and get their profile information
+    const userData: IUser | null = await User.findById(user.id).select('name age occupation');
+    if (!userData) {
+      return createResponse(404, { error: "User not found" });
+    }
+
+    return createResponse(200, { 
+      name: userData.name,
+      age: userData.age,
+      occupation: userData.occupation
+    });
+  } catch (err) {
+    console.error("Get user profile error:", err);
+    return createResponse(500, { 
+      error: "Failed to get user profile", 
+      details: err instanceof Error ? err.message : String(err) 
+    });
+  }
+};
+
 // Get user preferences for logged-in user
 export const getSortPreference = async (event: LambdaEvent): Promise<LambdaResponse> => {
   try {

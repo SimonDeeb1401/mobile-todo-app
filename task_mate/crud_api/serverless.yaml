@@ -69,6 +69,13 @@ functions:
       - httpApi:
           method: delete
           path: /api/tasks/{id}
+  
+  getUserProfile:
+    handler: dist/controllers/userController.getUserProfile
+    events:
+      - httpApi:
+          method: get
+          path: /api/user/profile
 
   getSortPreference:
     handler: dist/controllers/userController.getSortPreference

@@ -1,9 +1,12 @@
 import jwt from "jsonwebtoken";
 import { createResponse, extractToken, type LambdaEvent, type LambdaResponse } from "../index.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export interface AuthenticatedUser {
+  name: string;
+  age: number;
+  occupation: string;
   id: string;
   email: string;
   sortPreference: { 
@@ -25,6 +28,10 @@ export const verifyTokenLambda = (event: LambdaEvent): { user: AuthenticatedUser
   }
 
   try {
+    if (!JWT_SECRET || typeof JWT_SECRET !== "string") {
+      console.error("JWT_SECRET is not defined or not a string");
+      return createResponse(500, { error: "Server configuration error" });
+    }
     const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
     return { user: decoded };
   } catch (err) {
