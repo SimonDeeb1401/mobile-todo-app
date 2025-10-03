@@ -23,6 +23,11 @@ class TaskProvider extends ChangeNotifier {
   Timer? get debounce => _debounce;
   bool get isSearching => _isSearching;
 
+  TaskProvider() {
+    _isLoading = true;
+    notifyListeners();
+  }
+
   void setTasks(List<dynamic> tasks) {
     _tasks = List.from(tasks);
     notifyListeners();
@@ -64,7 +69,8 @@ class TaskProvider extends ChangeNotifier {
     try {
       final data = await ApiService.getTasks();
       _tasks = List.from(data);
-      notifyListeners();
+      //notifyListeners();
+      await fetchTasksSorted();
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching tasks: $e');

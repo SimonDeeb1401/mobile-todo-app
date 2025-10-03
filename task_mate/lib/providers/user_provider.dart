@@ -21,12 +21,15 @@ class UserProvider with ChangeNotifier {
   String get order => _order;
 
   UserProvider() {
+    _isLoading = true;
     _fetchSortPreference();
   }
   
   Future<void> fetchUserProfile() async {
-    _isLoading = true;
-    notifyListeners();
+    if(_name == null) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
       final profile = await ApiService.getUserProfile();
@@ -35,12 +38,8 @@ class UserProvider with ChangeNotifier {
         _age = profile['age'];
         _occupation = profile['occupation'];
         _email = profile['email'];
-        //_isLoading = false;
-        //notifyListeners();
       }
     } catch (e) {
-      //_isLoading = false;
-      //notifyListeners();
       if (kDebugMode) {
         print('Error fetching user profile: $e');
       }
