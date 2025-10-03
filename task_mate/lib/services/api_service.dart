@@ -165,6 +165,7 @@ class ApiService {
           "name": responseJson['name'],
           "age": responseJson['age'],
           "occupation": responseJson['occupation'],
+          "email": responseJson['email'],
         };
       }
       return null;

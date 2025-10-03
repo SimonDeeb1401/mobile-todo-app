@@ -19,7 +19,7 @@ export const getUserProfile = async (event: LambdaEvent): Promise<LambdaResponse
     const user = authResult.user;
 
     // Find the user and get their profile information
-    const userData: IUser | null = await User.findById(user.id).select('name age occupation');
+    const userData: IUser | null = await User.findById(user.id).select('name age occupation email');
     if (!userData) {
       return createResponse(404, { error: "User not found" });
     }
@@ -27,7 +27,8 @@ export const getUserProfile = async (event: LambdaEvent): Promise<LambdaResponse
     return createResponse(200, { 
       name: userData.name,
       age: userData.age,
-      occupation: userData.occupation
+      occupation: userData.occupation,
+      email: userData.email
     });
   } catch (err) {
     console.error("Get user profile error:", err);

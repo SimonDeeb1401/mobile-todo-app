@@ -9,11 +9,14 @@ class UserProvider with ChangeNotifier {
   String? _email;
   String _mode = "createdAt"; // Default sort mode
   String _order = "asc"; // Default sort order
+  bool _isLoading = false;
 
   String? get name => _name;
   int? get age => _age;
   String? get occupation => _occupation;
   String? get email => _email;
+
+  bool get isLoading => _isLoading;
   String get mode => _mode;
   String get order => _order;
 
@@ -22,6 +25,9 @@ class UserProvider with ChangeNotifier {
   }
   
   Future<void> fetchUserProfile() async {
+    _isLoading = true;
+    notifyListeners();
+
     try {
       final profile = await ApiService.getUserProfile();
       if (profile != null) {
@@ -29,12 +35,18 @@ class UserProvider with ChangeNotifier {
         _age = profile['age'];
         _occupation = profile['occupation'];
         _email = profile['email'];
-        notifyListeners();
+        //_isLoading = false;
+        //notifyListeners();
       }
     } catch (e) {
+      //_isLoading = false;
+      //notifyListeners();
       if (kDebugMode) {
         print('Error fetching user profile: $e');
       }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
