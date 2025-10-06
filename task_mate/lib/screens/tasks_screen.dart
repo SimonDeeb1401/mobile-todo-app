@@ -36,7 +36,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     // Fetch tasks when the screen initializes
     // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   _fetchTasks();
@@ -79,14 +79,16 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     }
   }
 
-  Widget _buildTaskList(List<Map<String, dynamic>> tasks, TaskProvider taskProvider, bool isPendingTab) {
+  Widget _buildTaskList(List<Map<String, dynamic>> tasks, TaskProvider taskProvider, int tabIndex) {
     if (tasks.isEmpty) {
       // Show different text depending on which tab is active
       return Center(
         child: Text(
-          isPendingTab
+          tabIndex == 0
           ? 'No pending tasks available.'
-          : 'No completed tasks available.',
+          : tabIndex == 1
+          ? 'No completed tasks available.'
+          : 'No shared tasks available.',
           style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
         ),
       );
@@ -461,8 +463,9 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
       builder: (context, taskProvider, child) {
         final tasks = taskProvider.tasks;
         // Filter tasks into completed and incomplete
-        List<Map<String, dynamic>> incompleteTasks = tasks.where((task) => !(task['completed'] ?? false)).cast<Map<String, dynamic>>().toList();
-        List<Map<String, dynamic>> completedTasks = tasks.where((task) => task['completed'] ?? false).cast<Map<String, dynamic>>().toList();
+        List<Map<String, dynamic>> incompleteTasks = tasks.where((task) => !(task['completed'] ?? false) && (task['collaborators'] == null || (task['collaborators'] as List).isEmpty)).cast<Map<String, dynamic>>().toList();
+        List<Map<String, dynamic>> completedTasks = tasks.where((task) => (task['completed'] ?? false) && (task['collaborators'] == null || (task['collaborators'] as List).isEmpty)).cast<Map<String, dynamic>>().toList();
+        List<Map<String, dynamic>> sharedTasks = tasks.where((task) => task['collaborators'] != null && (task['collaborators'] as List).isNotEmpty).cast<Map<String, dynamic>>().toList();
 
         return Scaffold(
           body: taskProvider.isLoading
@@ -477,8 +480,9 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                   : TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildTaskList(incompleteTasks, taskProvider, true),
-                        _buildTaskList(completedTasks, taskProvider, false),
+                        _buildTaskList(incompleteTasks, taskProvider, 0),
+                        _buildTaskList(completedTasks, taskProvider, 1),
+                        _buildTaskList(sharedTasks, taskProvider, 2),
                       ],
                     ),
           floatingActionButton: FloatingActionButton(

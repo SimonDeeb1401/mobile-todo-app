@@ -50,8 +50,9 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> w
       builder: (context, userProvider, taskProvider, child) {
         final tasks = taskProvider.tasks;
         // Filter tasks into completed and incomplete
-        List<Map<String, dynamic>> incompleteTasks = tasks.where((task) => !(task['completed'] ?? false)).cast<Map<String, dynamic>>().toList();
-        List<Map<String, dynamic>> completedTasks = tasks.where((task) => task['completed'] ?? false).cast<Map<String, dynamic>>().toList();
+        List<Map<String, dynamic>> incompleteTasks = tasks.where((task) => !(task['completed'] ?? false) && (task['collaborators'] == null || (task['collaborators'] as List).isEmpty)).cast<Map<String, dynamic>>().toList();
+        List<Map<String, dynamic>> completedTasks = tasks.where((task) => (task['completed'] ?? false) && (task['collaborators'] == null || (task['collaborators'] as List).isEmpty)).cast<Map<String, dynamic>>().toList();
+        List<Map<String, dynamic>> sharedTasks = tasks.where((task) => task['collaborators'] != null && (task['collaborators'] as List).isNotEmpty).cast<Map<String, dynamic>>().toList();
 
         final currentSort = userProvider.mode;
         final isAscending = userProvider.order == "asc";
@@ -113,6 +114,10 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> w
                 Tab(
                   text: 'Completed (${completedTasks.length})',
                   icon: const Icon(Icons.check_circle),
+                ),
+                Tab(
+                  text: 'Shared (${sharedTasks.length})',
+                  icon: const Icon(Icons.people_alt_rounded),
                 ),
               ],
             ) : null,
