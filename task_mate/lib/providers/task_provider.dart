@@ -89,6 +89,7 @@ class TaskProvider extends ChangeNotifier {
     required String priority,
     required DateTime deadline,
     bool completed = false,
+    List<String>? collaborators,
   }) async {
     try {
       final success = await ApiService.createTask(
@@ -97,6 +98,7 @@ class TaskProvider extends ChangeNotifier {
         priority,
         deadline,
         completed,
+        collaborators,
       );
 
       if (success) {

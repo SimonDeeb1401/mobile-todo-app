@@ -3,9 +3,15 @@ import type { ITask } from "../models/Task.js";
 import { connectToDatabase, createResponse, parseBody, type LambdaEvent, type LambdaResponse } from "../index.js";
 import { verifyTokenLambda, isErrorResponse, type AuthenticatedUser } from "../middleware/authMiddleware.js";
 import mongoose from "mongoose";
+import User from "../models/User.js";
 import { normalize } from "path";
 
 const STEP = 1000; // Step value for orderIndex gaps
+
+type ResolveResult = {
+  collaboratorIds: mongoose.Types.ObjectId[];
+  notFound: string[]; // normalized emails that weren't matched
+};
 
 // CREATE task for logged-in user
 export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
@@ -18,10 +24,19 @@ export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
     }
     
     const user = authResult.user;
-    const { title, description, priority, deadline, completed } = parseBody(event);
+    const { title, description, priority, deadline, completed, collaborators } = parseBody(event);
     
     if (!title) {
       return createResponse(400, { error: "Title is required" });
+    }
+
+    const { collaboratorIds, notFound } = await resolveCollaboratorIdsByEmail(collaborators);
+
+    if (notFound.length > 0) {
+      return createResponse(400, {
+        error: "Some collaborators were not found",
+        details: { unknownEmails: notFound },
+      });
     }
 
     const maxOrderTask = await Task.findOne({ user: user.id, completed: false })
@@ -37,6 +52,7 @@ export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
       deadline: deadline ? new Date(deadline) : undefined, 
       completed: completed || false, 
       user: user.id,
+      collaborators: collaboratorIds,
       orderIndex: newOrderIndex
     });
     
@@ -133,6 +149,17 @@ export const updateTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
     // Convert deadline to Date if provided
     if (updateData.deadline) {
       updateData.deadline = new Date(updateData.deadline);
+    }
+
+    if(Array.isArray(updateData.collaborators)){
+      const { collaboratorIds, notFound } = await resolveCollaboratorIdsByEmail(updateData.collaborators);
+      if (notFound.length > 0) {
+        return createResponse(400, {
+          error: "Some collaborators were not found",
+          details: { unknownEmails: notFound },
+        });
+      }
+      updateData.collaborators = collaboratorIds;
     }
     
     const task = await Task.findOneAndUpdate(
@@ -299,4 +326,50 @@ async function normalizeOrderIndexes(userId: string) {
   if(bulkOps.length){
     await Task.bulkWrite(bulkOps);
   }
+}
+
+async function resolveCollaboratorIdsByEmail(emails: unknown): Promise<ResolveResult> {
+  if (!Array.isArray(emails)) {
+    return { collaboratorIds: [], notFound: [] };
+  }
+
+  // 1) Normalize and dedupe
+  const original = emails
+    .map((e) => (typeof e === "string" ? e : ""))
+    .filter((e) => e.length > 0);
+
+  const unique = Array.from(new Set(original));
+  if (unique.length === 0) {
+    return { collaboratorIds: [], notFound: [] };
+  }
+
+  // 2) Single indexed query on email (unique index => efficient)
+  const users = await User.find({ email: { $in: unique } })
+    .select("_id email")
+    .lean();
+
+  // 3) Build a lookup map email -> _id
+  const emailToId = new Map<string, mongoose.Types.ObjectId>();
+  users.forEach((u) => {
+    const key = (u as any).email;
+    emailToId.set(key, (u as any)._id as mongoose.Types.ObjectId);
+  });
+
+  // 4) Preserve original order, filter duplicates, compute notFound
+  const seen = new Set<string>();
+  const collaboratorIds: mongoose.Types.ObjectId[] = [];
+  const notFound: string[] = [];
+
+  original.forEach((e) => {
+    if (seen.has(e)) return;
+    seen.add(e);
+    const id = emailToId.get(e);
+    if (id) {
+      collaboratorIds.push(id);
+    } else {
+      notFound.push(e);
+    }
+  });
+
+  return { collaboratorIds, notFound };
 }

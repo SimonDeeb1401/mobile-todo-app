@@ -75,7 +75,7 @@ class ApiService {
   }
 
   // Add a task
-  static Future<bool> createTask(String title, String description, String priority, DateTime deadline, bool completed) async {
+  static Future<bool> createTask(String title, String description, String priority, DateTime deadline, bool completed, List<String>? collaborators) async {
     try {
       final token = await storage.read(key: "jwt");
       print("Token: $token");
@@ -88,7 +88,8 @@ class ApiService {
             "description": description, 
             "priority": priority, 
             "deadline": deadline.toIso8601String(), 
-            "completed": completed
+            "completed": completed,
+            "collaborators": collaborators ?? [],
           }));
       
       print("Response status code: ${res.statusCode}");

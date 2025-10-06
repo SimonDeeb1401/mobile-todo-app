@@ -8,6 +8,8 @@ export interface ITask extends Document {
   deadline: Date;
   completed: boolean;
   user: mongoose.Types.ObjectId;
+  collaborators?: mongoose.Types.ObjectId[];
+  comments?: { user: mongoose.Types.ObjectId; text: string; createdAt: Date }[];
   orderIndex: number;
   createdAt: Date;
   updatedAt: Date;
@@ -20,6 +22,14 @@ const taskSchema: Schema = new Schema({
   deadline: { type: Date, required: true },
   completed: { type: Boolean, default: false },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  comments: [
+    {
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+      text: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
   orderIndex: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

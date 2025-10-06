@@ -14,8 +14,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _collaboratorController = TextEditingController();
   DateTime? _selectedDeadline;
   String _selectedPriority = 'Medium';
+  List<String> _selectedCollaborators = [];
   bool _isLoading = false;
 
   final List<String> _priorities = ['Low', 'Medium', 'High'];
@@ -24,6 +26,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _collaboratorController.dispose();
     super.dispose();
   }
 
@@ -71,6 +74,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         priority: _selectedPriority.toLowerCase(),
         deadline: _selectedDeadline ?? DateTime.now().add(const Duration(days: 7)), // Default to 7 days if no deadline
         completed: false, // New tasks are not completed by default
+        collaborators: _selectedCollaborators, // Pass selected collaborators
       );
       
       if (success) {
@@ -206,6 +210,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
               const SizedBox(height: AppDimensions.paddingXLarge),
 
+              // Collaborators Section
+              _buildCollaboratorsSection(),
+
+              const SizedBox(height: AppDimensions.paddingXLarge),
+              
               // Create Task Button
               _buildCreateButton(),
 
@@ -377,6 +386,102 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       default:
         return AppColors.primary;
     }
+  }
+
+  Widget _buildCollaboratorsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Collaborators',
+          style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: AppDimensions.paddingSmall),
+
+        Container(
+          padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+          decoration: AppDecorations.inputFieldDecoration,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Chips
+              if (_selectedCollaborators.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppDimensions.paddingMedium),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _selectedCollaborators.map((c) {
+                      return Chip(
+                        label: Text(c, style: AppTextStyles.bodySmall),
+                        backgroundColor: AppColors.primary.withOpacity(0.08),
+                        deleteIcon: const Icon(Icons.close, size: 18),
+                        onDeleted: () {
+                          setState(() {
+                            _selectedCollaborators.remove(c);
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+              // Text field for email entry
+              Row(
+                children: [
+                  Icon(Icons.person_add_alt_1, color: AppColors.primary),
+                  const SizedBox(width: AppDimensions.paddingMedium),
+                  Expanded(
+                    child: TextField(
+                      controller: _collaboratorController,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.done,
+                      style: AppTextStyles.bodyLarge,
+                      decoration: InputDecoration(
+                        hintText: 'Type email and press Enter',
+                        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      onSubmitted: (_) => _addCollaboratorFromInput(),
+                    ),
+                  ),
+                  // Optional Add button
+                  TextButton(
+                    onPressed: _addCollaboratorFromInput,
+                    child: Text('Add', style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primary)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _addCollaboratorFromInput() {
+    final raw = _collaboratorController.text.trim();
+    if (raw.isEmpty) return;
+
+    if (!_isValidEmail(raw)) {
+      _showErrorSnackBar('Please enter a valid email address.');
+      return;
+    }
+    if (_selectedCollaborators.contains(raw.toLowerCase())) {
+      _showErrorSnackBar('This collaborator is already added.');
+      return;
+    }
+
+    setState(() {
+      _selectedCollaborators.add(raw.toLowerCase());
+      _collaboratorController.clear();
+    });
+  }
+
+  bool _isValidEmail(String email) {
+    final r = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    return r.hasMatch(email);
   }
 
   Widget _buildCreateButton() {
