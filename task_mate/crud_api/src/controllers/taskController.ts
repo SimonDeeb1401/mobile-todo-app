@@ -80,7 +80,7 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     const user = authResult.user;
 
     const { search } = event.queryStringParameters || {};
-    const filter: any = { user: user.id };
+    const filter: any = { $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] };
 
     if (search) {
       filter.$text = { $search: search };
@@ -89,12 +89,15 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     let tasks;
 
     if (user.sortPreference.mode === "manual") {
-      tasks = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 });
+      tasks = await Task.find({ $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] }).sort({ completed: 1, orderIndex: 1 });
     }
 
     else if (user.sortPreference.mode === "priority") {
       tasks = await Task.aggregate([
-        { $match: { user: new mongoose.Types.ObjectId(user.id) } },
+        { $match: { $or: [
+            { user: new mongoose.Types.ObjectId(user.id) },
+            { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(user.id) } } }
+        ] } },
         { $addFields: {
             priorityValue: { 
               $switch: {
@@ -114,7 +117,7 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     }
 
     else{
-      tasks = await Task.find({ user: user.id }).sort({ [user.sortPreference.mode]: user.sortPreference.order === "asc" ? 1 : -1 });
+      tasks = await Task.find({ $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] }).sort({ [user.sortPreference.mode]: user.sortPreference.order === "asc" ? 1 : -1 });
     }
     
     
