@@ -89,7 +89,18 @@ export const getTasks = async (event: LambdaEvent): Promise<LambdaResponse> => {
     let tasks;
 
     if (user.sortPreference.mode === "manual") {
-      tasks = await Task.find({ $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] }).sort({ completed: 1, orderIndex: 1 });
+      //tasks = await Task.find({ $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] }).sort({ completed: 1, orderIndex: 1 });
+      tasks = await Task.aggregate([
+        { $match: { $or: [
+            { user: new mongoose.Types.ObjectId(user.id) },
+            { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(user.id) } } }
+        ] } },
+        { $addFields: {
+            hasNoCollaborators: { $eq: [ { $size: "$collaborators" }, 0 ] }
+        }},
+        { $sort: { hasNoCollaborators: -1, completed: 1, orderIndex: 1 } },
+        { $project: { hasNoCollaborators: 0 } }
+      ]);
     }
 
     else if (user.sortPreference.mode === "priority") {
@@ -225,13 +236,24 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
     const orderedTaskId = event.pathParameters?.id;
     const { newIndex } = parseBody(event);
 
-    const totalTasksCount = await Task.countDocuments({ user: user.id });
+    const totalTasksCount = await Task.countDocuments({ $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] });
 
     if (newIndex < 0 || newIndex >= totalTasksCount) {
       return createResponse(400, { error: "Invalid new index" });
     }
 
-    const allTasksSorted = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
+    //const allTasksSorted = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
+    const allTasksSorted = await Task.aggregate([
+      { $match: { $or: [
+          { user: new mongoose.Types.ObjectId(user.id) },
+          { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(user.id) } } }
+      ] } },
+      { $addFields: {
+          hasNoCollaborators: { $eq: [ { $size: "$collaborators" }, 0 ] }
+      }},
+      { $sort: { hasNoCollaborators: -1, completed: 1, orderIndex: 1 } },
+      { $project: { hasNoCollaborators: 0 } }
+    ]);
     const ids = allTasksSorted.map(t => String(t._id));
     const currentIndex = ids.indexOf(String(orderedTaskId));
     if (currentIndex === -1) {
@@ -254,7 +276,18 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
       newOrderIndex = Math.floor(nextOrderIndex / 2);
       if(newOrderIndex <= 0){
         await normalizeOrderIndexes(user.id);
-        const updated = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
+        //const updated = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
+        const updated = await Task.aggregate([
+          { $match: { $or: [
+              { user: new mongoose.Types.ObjectId(user.id) },
+              { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(user.id) } } }
+          ] } },
+          { $addFields: {
+              hasNoCollaborators: { $eq: [ { $size: "$collaborators" }, 0 ] }
+          }},
+          { $sort: { hasNoCollaborators: -1, completed: 1, orderIndex: 1 } },
+          { $project: { hasNoCollaborators: 0 } }
+        ]);
         const nextUpdated = updated.find(t => String(t._id) === nextId)!;
         newOrderIndex = Math.floor(nextUpdated.orderIndex / 2);
       }
@@ -271,7 +304,18 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
       }
       else{
         await normalizeOrderIndexes(user.id);
-        const updated = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
+        //const updated = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 }).select('_id orderIndex completed');
+        const updated = await Task.aggregate([
+          { $match: { $or: [
+              { user: new mongoose.Types.ObjectId(user.id) },
+              { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(user.id) } } }
+          ] } },
+          { $addFields: {
+              hasNoCollaborators: { $eq: [ { $size: "$collaborators" }, 0 ] }
+          }},
+          { $sort: { hasNoCollaborators: -1, completed: 1, orderIndex: 1 } },
+          { $project: { hasNoCollaborators: 0 } }
+        ]);
         const prevUpdated = updated.find(t => String(t._id) === prevId)!;
         const nextUpdated = updated.find(t => String(t._id) === nextId)!;
         newOrderIndex = Math.floor((prevUpdated.orderIndex + nextUpdated.orderIndex) / 2);
@@ -281,7 +325,18 @@ export const moveTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
     await Task.updateOne({_id: orderedTaskId, user: user.id},{ $set: { orderIndex: newOrderIndex }});
 
     const movedTask = await Task.findById(orderedTaskId);
-    const allTasksAfterMove = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 });
+    //const allTasksAfterMove = await Task.find({ user: user.id }).sort({ completed: 1, orderIndex: 1 });
+    const allTasksAfterMove = await Task.aggregate([
+        { $match: { $or: [
+              { user: new mongoose.Types.ObjectId(user.id) },
+              { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(user.id) } } }
+          ] } },
+        { $addFields: {
+            hasNoCollaborators: { $eq: [ { $size: "$collaborators" }, 0 ] }
+        }},
+        { $sort: { hasNoCollaborators: -1, completed: 1, orderIndex: 1 } },
+        { $project: { hasNoCollaborators: 0 } }
+      ]);
     return createResponse(200, { success: true, task: movedTask, tasks: allTasksAfterMove });
   } 
 
@@ -319,7 +374,18 @@ export const reorderAllTasks = async (event: LambdaEvent): Promise<LambdaRespons
 };
 
 async function normalizeOrderIndexes(userId: string) {
-  const allTasks = await Task.find({ user: userId }).sort({ completed: 1, orderIndex: 1 }).select('_id');
+  //const allTasks = await Task.find({ user: userId }).sort({ completed: 1, orderIndex: 1 }).select('_id');
+  const allTasks = await Task.aggregate([
+    { $match: { $or: [
+              { user: new mongoose.Types.ObjectId(userId) },
+              { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(userId) } } }
+          ] } },
+    { $addFields: {
+        hasNoCollaborators: { $eq: [ { $size: "$collaborators" }, 0 ] }
+    }},
+    { $sort: { hasNoCollaborators: -1, completed: 1, orderIndex: 1 } },
+    { $project: { hasNoCollaborators: 0 } }
+  ]);
   const bulkOps = allTasks.map((task, index) => ({
     updateOne: {
       filter: { _id: task._id },

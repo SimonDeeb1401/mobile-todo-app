@@ -38,9 +38,9 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     // Fetch tasks when the screen initializes
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   _fetchTasks();
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchTasks();
+    });
   }
 
   @override
@@ -52,9 +52,9 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     //}
     // if (_hasInitialized) return;
     // _hasInitialized = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchTasks();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _fetchTasks();
+    // });
   }
 
   @override
@@ -97,14 +97,15 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     return RefreshIndicator(
       onRefresh: () async {
         // Get current sort preferences and fetch with those
-        final userProvider = Provider.of<UserProvider>(context, listen: false);
-        final sortedTasks = await ApiService.updateSortPreference(
-          userProvider.mode, 
-          userProvider.order
-        );
-        if (sortedTasks != null) {
-          taskProvider.setTasks(sortedTasks);
-        }
+        // final userProvider = Provider.of<UserProvider>(context, listen: false);
+        // final sortedTasks = await ApiService.updateSortPreference(
+        //   userProvider.mode, 
+        //   userProvider.order
+        // );
+        // if (sortedTasks != null) {
+        //   taskProvider.setTasks(sortedTasks);
+        // }
+        _fetchTasks();
       },
       child: (Provider.of<UserProvider>(context).mode != "manual")
       ? ListView.builder(

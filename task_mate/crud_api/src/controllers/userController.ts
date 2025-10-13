@@ -100,7 +100,18 @@ export const updateSortPreference = async (event: LambdaEvent): Promise<LambdaRe
     let tasks;
 
     if (updatedUser.sortPreference.mode === "manual") {
-      tasks = await Task.find({ $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] }).sort({ completed: 1, orderIndex: 1 });
+      //tasks = await Task.find({ $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] }).sort({ completed: 1, orderIndex: 1 });
+      tasks = await Task.aggregate([
+        { $match: { $or: [
+            { user: new mongoose.Types.ObjectId(user.id) },
+            { collaborators: { $elemMatch: { $eq: new mongoose.Types.ObjectId(user.id) } } }
+        ] } },
+        { $addFields: {
+            hasNoCollaborators: { $eq: [ { $size: "$collaborators" }, 0 ] }
+        }},
+        { $sort: { hasNoCollaborators: -1, completed: 1, orderIndex: 1 } },
+        { $project: { hasNoCollaborators: 0 } }
+      ]);
     }
 
     else if (updatedUser.sortPreference.mode === "priority") {
