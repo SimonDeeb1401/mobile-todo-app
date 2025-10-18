@@ -149,6 +149,7 @@ class TaskProvider extends ChangeNotifier {
     required String description,
     required DateTime? deadline,
     required String priority,
+    required List<String> collaborators,
   }) async {
     try {
       final success = await ApiService.updateTask(
@@ -157,6 +158,7 @@ class TaskProvider extends ChangeNotifier {
         description,
         priority,
         deadline,
+        collaborators,
       );
 
       if (success) {
@@ -508,5 +510,31 @@ class TaskProvider extends ChangeNotifier {
     } else if (trimmed.isEmpty) {
       await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
     }
+  }
+
+  Future<Map<String, dynamic>?> getCollaboratorsData(String taskId) async {
+    try {
+      final data = await ApiService.getCollaboratorsData(taskId);
+      //print("Collaborators data for task $taskId: $data");
+      if (data != null) {
+        final user = data['user'];
+        final collaborators = data['collaborators'];
+        if (kDebugMode) {
+          print('Collaborators for task $taskId: $collaborators');
+        }
+        print("User: $user");
+        print("Collaborators: $collaborators");
+        notifyListeners();
+        return {
+          "user": user,
+          "collaborators": collaborators,
+        };
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching collaborators for task $taskId: $e');
+      }
+    }
+    return null;
   }
 }

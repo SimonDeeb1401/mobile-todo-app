@@ -373,6 +373,44 @@ export const reorderAllTasks = async (event: LambdaEvent): Promise<LambdaRespons
   }
 };
 
+export const getCollaboratorsData = async (event: LambdaEvent): Promise<LambdaResponse> => {
+  try {
+    await connectToDatabase();
+
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
+
+    const user = authResult.user;
+    const taskId = event.pathParameters?.id;
+
+    console.log("Event received for getCollaboratorsData:", event);
+
+    console.log("Fetching collaborators data for taskId:", taskId, "and userId:", user.id);
+
+    const task = await Task.findOne({ _id: taskId, $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] })
+      .populate({ path: "user collaborators", select: "_id email name occupation" })
+      .lean();
+
+    console.log("Task: ", task);
+
+    if (!task) {
+      console.log("Task not found");
+      return createResponse(404, { error: "Task not found" });
+    }
+
+    console.log("Fetched collaborators data:", { user: task.user, collaborators: task.collaborators });
+
+    return createResponse(200, { success: true, user: task.user, collaborators: task.collaborators });
+  }
+
+  catch (err) {
+    console.error("Get collaborators data error:", err);
+    return createResponse(500, { error: "Failed to get collaborators data" });
+  }
+};
+
 async function normalizeOrderIndexes(userId: string) {
   //const allTasks = await Task.find({ user: userId }).sort({ completed: 1, orderIndex: 1 }).select('_id');
   const allTasks = await Task.aggregate([

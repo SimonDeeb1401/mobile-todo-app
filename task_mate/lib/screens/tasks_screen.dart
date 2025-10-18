@@ -38,9 +38,9 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     // Fetch tasks when the screen initializes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchTasks();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _fetchTasks();
+    // });
   }
 
   @override
@@ -52,9 +52,9 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     //}
     // if (_hasInitialized) return;
     // _hasInitialized = true;
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   _fetchTasks();
-    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchTasks();
+    });
   }
 
   @override
@@ -181,6 +181,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                       taskDescription: task['description'],
                       taskDeadline: DateTime.parse(task['deadline']),
                       taskPriority: task['priority'],
+                      taskCollaborators: task['collaborators'] != null ? List<String>.from(task['collaborators']) : [],
                       ),
                     ),
                     );
@@ -350,6 +351,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                                 taskDescription: task['description'],
                                 taskDeadline: DateTime.parse(task['deadline']),
                                 taskPriority: task['priority'],
+                                taskCollaborators: task['collaborators'] != null ? List<String>.from(task['collaborators']) : [],
                                 ),
                               ),
                               );

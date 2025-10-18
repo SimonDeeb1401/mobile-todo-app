@@ -105,6 +105,13 @@ functions:
           method: post
           path: /api/tasks/reorder
 
+  getCollaboratorsData:
+    handler: dist/controllers/taskController.getCollaboratorsData
+    events:
+      - httpApi:
+          method: get
+          path: /api/tasks/{id}/collaborators
+
 package:
   patterns:
     - '!src/**'

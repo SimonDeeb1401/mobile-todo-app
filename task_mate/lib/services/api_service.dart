@@ -104,7 +104,7 @@ class ApiService {
   }
 
   /// Update an existing task
-  static Future<bool> updateTask(String id, String title, String description, String priority, DateTime? deadline) async {
+  static Future<bool> updateTask(String id, String title, String description, String priority, DateTime? deadline, List<String> collaborators) async {
     try {
       final token = await storage.read(key: "jwt");
       final res = await http.put(Uri.parse("$baseUrl/tasks/$id"),
@@ -114,6 +114,7 @@ class ApiService {
             "description": description,
             "priority": priority,
             "deadline": deadline?.toIso8601String(),
+            "collaborators": collaborators,
           }));
       return res.statusCode == 200;
     } catch (e) {
@@ -248,6 +249,28 @@ class ApiService {
       print("ReorderAllTasks error: $e");
       print("Trying to connect to: $baseUrl/tasks/reorder");
       return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getCollaboratorsData(String taskId) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.get(Uri.parse("$baseUrl/tasks/$taskId/collaborators"),
+          headers: {"Authorization": "Bearer $token"});
+      print("GetCollaboratorsData response status: ${res.statusCode}");
+      if (res.statusCode == 200) {
+        final responseJson = jsonDecode(res.body);
+        //print("GetCollaboratorsData response: $responseJson");
+        return {
+          "user": responseJson['user'],
+          "collaborators": responseJson['collaborators'],
+        };
+      }
+      return null;
+    } catch (e) {
+      print("GetCollaboratorsData error: $e");
+      print("Trying to connect to: $baseUrl/tasks/$taskId/collaborators");
+      return null;
     }
   }
 }
