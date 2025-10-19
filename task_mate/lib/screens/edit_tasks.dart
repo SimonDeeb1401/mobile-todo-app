@@ -59,6 +59,21 @@ class _EditTaskScreenState extends State<EditTaskScreen>{
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
       _participants = await taskProvider.getCollaboratorsData(widget.taskId);
+      final user = _participants?["user"];
+      final dynamic collaboratorsData = _participants?["collaborators"];
+      if (collaboratorsData is Map) {
+        _selectedCollaborators.addAll(collaboratorsData.values
+          .where((c) => c is Map && c['email'] != null)
+          .map<String>((c) => (c['email'] as String).toLowerCase())
+          .toList());
+        _selectedCollaborators = _selectedCollaborators.toSet().toList();
+      } else if (collaboratorsData is List) {
+        _selectedCollaborators.addAll(collaboratorsData
+            .where((c) => c is Map && c['email'] != null)
+            .map<String>((c) => c['email'] as String)
+            .toList());
+        _selectedCollaborators = _selectedCollaborators.toSet().toList();
+      }
       setState(() {});
     });
   }
@@ -151,30 +166,30 @@ class _EditTaskScreenState extends State<EditTaskScreen>{
     //_selectedCollaborators = widget.taskCollaborators;
     // final taskProvider = Provider.of<TaskProvider>(context, listen: false);
     // final participants = taskProvider.getCollaboratorsData(widget.taskId);
-    final user = _participants?["user"];
-    final dynamic collaboratorsData = _participants?["collaborators"];
+    // final user = _participants?["user"];
+    // final dynamic collaboratorsData = _participants?["collaborators"];
     // print("Userrrrrrr: $user");
     // print("Collaboratorssssssssss: $collaboratorsData");
-    if (collaboratorsData is Map) {
-      setState(() {
-        _selectedCollaborators.addAll(collaboratorsData.values
-          .where((c) => c is Map && c['email'] != null)
-          .map<String>((c) => (c['email'] as String).toLowerCase())
-          .toList());
+    // if (collaboratorsData is Map) {
+    //   setState(() {
+    //     _selectedCollaborators.addAll(collaboratorsData.values
+    //       .where((c) => c is Map && c['email'] != null)
+    //       .map<String>((c) => (c['email'] as String).toLowerCase())
+    //       .toList());
         
-        _selectedCollaborators = _selectedCollaborators.toSet().toList();
-      });
+    //     _selectedCollaborators = _selectedCollaborators.toSet().toList();
+    //   });
       
-    } else if (collaboratorsData is List) {
-      setState(() {
-        _selectedCollaborators.addAll(collaboratorsData
-            .where((c) => c is Map && c['email'] != null)
-            .map<String>((c) => c['email'] as String)
-            .toList());
+    // } else if (collaboratorsData is List) {
+    //   setState(() {
+    //     _selectedCollaborators.addAll(collaboratorsData
+    //         .where((c) => c is Map && c['email'] != null)
+    //         .map<String>((c) => c['email'] as String)
+    //         .toList());
 
-        _selectedCollaborators = _selectedCollaborators.toSet().toList();
-      });
-    }
+    //     _selectedCollaborators = _selectedCollaborators.toSet().toList();
+    //   });
+    // }
     // else {
     //   _selectedCollaborators = [];
     // }
