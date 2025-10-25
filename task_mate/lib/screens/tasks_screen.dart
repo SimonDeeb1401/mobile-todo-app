@@ -380,6 +380,22 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                   },
                   itemBuilder: (context, index) {
                     final task = tasks[index];
+                    // Ensure provider is subscribed to collaborators stream for this task so snapshot is kept up-to-date
+                    if (_taskProvider != null) _taskProvider!.subscribeToCollaboratorsStream(task['_id']);
+
+                    // Read synchronous cached snapshot
+                    final teamData = taskProvider.getCollaboratorsSnapshot(task['_id']);
+                    print("Team data for task ${task['_id']}: $teamData");
+                    String teamText = '';
+                    if (teamData != null && teamData['user'] != null) {
+                      final user = teamData['user'];
+                      final collaborators = teamData['collaborators'] as List? ?? [];
+                      final userName = user['name'] ?? '';
+                      final userOccupation = user['occupation'] ?? '';
+                      final collaboratorsText = collaborators.map((e) => (e['name'] != null && e['occupation'] != null) ? "${e['name']} (${e['occupation']})" : "").join('\n');
+                      teamText = "$userName ($userOccupation)\n$collaboratorsText";
+                    }
+
                     return Card(
                       key: ValueKey(task['_id']),
                       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -459,6 +475,22 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                             ),
                           ],
                           ),
+
+                          task['collaborators'] != null && (task['collaborators'] as List).isNotEmpty
+                          ? Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.secondary.withOpacity(0.04),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: _buildMemberRows(teamText, context),
+                              )
+                            )
+                          : tabIndex == 2 ? SizedBox(child: Center(child: CircularProgressIndicator())) : const SizedBox.shrink(),
+
                           const SizedBox(height: 8),
                           if (task['description'] != null && task['description'].toString().isNotEmpty)
                           Text(
