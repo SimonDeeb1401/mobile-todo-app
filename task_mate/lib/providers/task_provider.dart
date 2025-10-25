@@ -7,6 +7,11 @@ import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 
 class TaskProvider extends ChangeNotifier {
+  // Cached latest collaborators snapshot per taskId
+  final Map<String, Map<String, dynamic>?> _collaboratorsSnapshot = {};
+  // Subscriptions to collaborators stream per taskId
+  final Map<String, StreamSubscription<Map<String, dynamic>?>> _collaboratorsSubscriptions = {};
+
   List<dynamic> _tasks = [];
   bool _isLoading = false;
   bool _isAnyTaskMoving = false;
@@ -15,6 +20,8 @@ class TaskProvider extends ChangeNotifier {
   Timer? _debounce;
   bool _isSearching = false;
 
+  Map<String, Map<String, dynamic>?> get collaboratorsSnapshot => _collaboratorsSnapshot;
+  Map<String, StreamSubscription<Map<String, dynamic>?>> get collaboratorsSubscriptions => _collaboratorsSubscriptions;
   List<dynamic> get tasks => _tasks;
   bool get isLoading => _isLoading;
   bool get isAnyTaskMoving => _isAnyTaskMoving;
@@ -511,11 +518,11 @@ class TaskProvider extends ChangeNotifier {
       await Provider.of<TaskProvider>(context, listen: false).fetchTasksSorted();
     }
   }
-
-  Future<Map<String, dynamic>?> getCollaboratorsData(String taskId) async {
+  
+  Stream<Map<String, dynamic>?> getCollaboratorsData(String taskId) async* {
     try {
       final data = await ApiService.getCollaboratorsData(taskId);
-      //print("Collaborators data for task $taskId: $data");
+      print("Collaborators data for task $taskId: $data");
       if (data != null) {
         final user = data['user'];
         final collaborators = data['collaborators'];
@@ -524,8 +531,8 @@ class TaskProvider extends ChangeNotifier {
         }
         print("User: $user");
         print("Collaborators: $collaborators");
-        notifyListeners();
-        return {
+        //notifyListeners();
+        yield {
           "user": user,
           "collaborators": collaborators,
         };
@@ -535,6 +542,76 @@ class TaskProvider extends ChangeNotifier {
         print('Error fetching collaborators for task $taskId: $e');
       }
     }
-    return null;
+    //yield null;
+  }
+
+  // Return the latest cached snapshot if available
+  Map<String, dynamic>? getCollaboratorsSnapshot(String taskId) {
+    print("Getting cached collaborators for task $taskId: ${_collaboratorsSnapshot[taskId]}");
+    return _collaboratorsSnapshot[taskId];
+  }
+
+  // Subscribe once to the collaborators stream for a task and keep the latest snapshot
+  void subscribeToCollaboratorsStream(String taskId) {
+    if (_collaboratorsSubscriptions.containsKey(taskId)) return;
+
+    try {
+      final Stream<Map<String, dynamic>?> stream = getCollaboratorsData(taskId);
+      final sub = stream.listen((data) {
+        _collaboratorsSnapshot[taskId] = data;
+        print("Updated collaborators for task $taskId: $data");
+        notifyListeners();
+      }, onError: (err) {
+        if (kDebugMode) print('Collaborators stream error for $taskId: $err');
+      });
+
+      _collaboratorsSubscriptions[taskId] = sub;
+    } catch (e) {
+      if (kDebugMode) print('Failed to subscribe to collaborators for $taskId: $e');
+    }
+  }
+
+  // Cancel subscription and clear snapshot for a task
+  void unsubscribeFromCollaboratorsStream(String taskId) {
+    final sub = _collaboratorsSubscriptions.remove(taskId);
+    sub?.cancel();
+    _collaboratorsSnapshot.remove(taskId);
+  }
+
+  // Update cached collaborators manually and notify listeners (use after local edits)
+  void updateCachedCollaborators(String taskId, List<String> collaborators) {
+    _collaboratorsSnapshot[taskId] = {
+      'user': _collaboratorsSnapshot[taskId]?['user'],
+      'collaborators': collaborators.map((e) => {'email': e}).toList(),
+    };
+    notifyListeners();
+    _refreshFullCollaboratorsFromServer(taskId);
+  }
+
+  Future<void> _refreshFullCollaboratorsFromServer(String taskId) async {
+  try {
+    final data = await ApiService.getCollaboratorsData(taskId);
+    if (data != null) {
+      // Replace the cached entry with the full data from server (has name, occupation, etc).
+      _collaboratorsSnapshot[taskId] = data;
+      if (kDebugMode) print('Refreshed full collaborators for $taskId: $data');
+      notifyListeners();
+    } else {
+      if (kDebugMode) print('No collaborator data returned from server for $taskId');
+    }
+  } catch (e) {
+    if (kDebugMode) print('Error refreshing collaborators for $taskId: $e');
+    // Optionally: keep the minimal email-only cache; don't overwrite with null.
+  }
+}
+
+  @override
+  void dispose() {
+    // Cancel all subscriptions
+    for (final sub in _collaboratorsSubscriptions.values) {
+      sub.cancel();
+    }
+    _collaboratorsSubscriptions.clear();
+    super.dispose();
   }
 }

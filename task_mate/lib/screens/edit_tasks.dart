@@ -34,6 +34,7 @@ class _EditTaskScreenState extends State<EditTaskScreen>{
   String _selectedPriority = 'Medium';
   List<String> _selectedCollaborators = [];
   Map<String, dynamic>? _participants = {};
+  bool _collabsInitialized = false;
   bool _isLoading = false;
 
   final List<String> _priorities = ['Low', 'Medium', 'High'];
@@ -56,26 +57,41 @@ class _EditTaskScreenState extends State<EditTaskScreen>{
     _selectedDeadline = widget.taskDeadline;
     // Capitalize first letter to match dropdown items
     _selectedPriority = widget.taskPriority[0].toUpperCase() + widget.taskPriority.substring(1).toLowerCase();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-      _participants = await taskProvider.getCollaboratorsData(widget.taskId);
-      final user = _participants?["user"];
-      final dynamic collaboratorsData = _participants?["collaborators"];
-      if (collaboratorsData is Map) {
-        _selectedCollaborators.addAll(collaboratorsData.values
+      // Try to read a cached snapshot synchronously
+      final snapshot = taskProvider.getCollaboratorsSnapshot(widget.taskId);
+      if (snapshot != null) {
+        _participants = snapshot;
+        _initializeCollaboratorsFromParticipants();
+        print("Initialized collaborators for task ${widget.taskId}: $_selectedCollaborators");
+      } else {
+        // Ensure provider is subscribed so it will populate the snapshot and notify listeners
+        taskProvider.subscribeToCollaboratorsStream(widget.taskId);
+        // If provider later notifies, build() can read the snapshot. For now we leave _selectedCollaborators as-is.
+      }
+    });
+  }
+
+  void _initializeCollaboratorsFromParticipants() {
+    if (_collabsInitialized) return;
+    final dynamic collaboratorsData = _participants?['collaborators'];
+    if (collaboratorsData is Map) {
+      _selectedCollaborators.addAll(collaboratorsData.values
           .where((c) => c is Map && c['email'] != null)
           .map<String>((c) => (c['email'] as String).toLowerCase())
           .toList());
-        _selectedCollaborators = _selectedCollaborators.toSet().toList();
-      } else if (collaboratorsData is List) {
-        _selectedCollaborators.addAll(collaboratorsData
-            .where((c) => c is Map && c['email'] != null)
-            .map<String>((c) => c['email'] as String)
-            .toList());
-        _selectedCollaborators = _selectedCollaborators.toSet().toList();
-      }
-      setState(() {});
-    });
+      _selectedCollaborators = _selectedCollaborators.toSet().toList();
+    } else if (collaboratorsData is List) {
+      _selectedCollaborators.addAll(collaboratorsData
+          .where((c) => c is Map && c['email'] != null)
+          .map<String>((c) => (c['email'] as String).toLowerCase())
+          .toList());
+      _selectedCollaborators = _selectedCollaborators.toSet().toList();
+    }
+    _collabsInitialized = true;
+    if (mounted) setState(() {});
+
   }
 
   Future<void> _selectDeadline() async {
@@ -136,7 +152,9 @@ class _EditTaskScreenState extends State<EditTaskScreen>{
             ),
           ),
         );
-        Navigator.of(context).pop();
+        // update provider cache so other screens reflect the change immediately
+        taskProvider.updateCachedCollaborators(widget.taskId, _selectedCollaborators);
+        Navigator.of(context).pop(_selectedCollaborators);
       }
     } catch (error) {
       _showErrorSnackBar(error.toString());

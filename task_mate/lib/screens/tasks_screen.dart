@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:task_mate/providers/user_provider.dart';
-import 'package:task_mate/services/api_service.dart';
 import 'dart:async';
 import 'add_task.dart';
 import '../providers/task_provider.dart';
@@ -20,7 +19,7 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
   TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   bool _isSearching = false;
-  bool _hasInitialized = false;
+  // bool _hasInitialized = false;
 
   TaskProvider? _taskProvider;
 
@@ -79,6 +78,74 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     }
   }
 
+  // Helper to produce an uppercase initial for an entry like "Name (Occupation)".
+  String _initialForEntry(String entry) {
+    final trimmed = entry.trim();
+    if (trimmed.isEmpty) return '';
+    final name = trimmed.split('(').first.trim(); // handle "Name (Occupation)"
+    final parts = name.split(RegExp(r'\s+'));
+    final first = parts.isNotEmpty ? parts.first : name;
+    return first.isNotEmpty ? first[0].toUpperCase() : '';
+  }
+
+  // Parse teamText into a list of maps {name, occupation}
+  List<Map<String, String>> _parseTeamEntries(String teamText) {
+    if (teamText.trim().isEmpty) return [];
+    final lines = teamText
+        .split('\n')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    return lines.map((line) {
+      final namePart = line.split('(').first.trim();
+      String occupation = '';
+      final occMatch = RegExp(r'\((.*)\)').firstMatch(line);
+      if (occMatch != null && occMatch.groupCount >= 1) {
+        occupation = occMatch.group(1)!.trim();
+      }
+      return {'name': namePart, 'occupation': occupation};
+    }).toList();
+  }
+
+  // Build a list of member row widgets for the Column
+  List<Widget> _buildMemberRows(String teamText, BuildContext context) {
+    final members = _parseTeamEntries(teamText);
+    return members.map((m) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: AppColors.primary,
+              child: Text(
+                _initialForEntry(m['name'] ?? ''),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    m['name'] ?? '',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  ),
+                  if ((m['occupation'] ?? '').isNotEmpty)
+                    Text(
+                      m['occupation'] ?? '',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
   Widget _buildTaskList(List<Map<String, dynamic>> tasks, TaskProvider taskProvider, int tabIndex) {
     if (tasks.isEmpty) {
       // Show different text depending on which tab is active
@@ -112,6 +179,22 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           final task = tasks[index];
+          // Ensure provider is subscribed to collaborators stream for this task so snapshot is kept up-to-date
+          if (_taskProvider != null) _taskProvider!.subscribeToCollaboratorsStream(task['_id']);
+
+          // Read synchronous cached snapshot
+          final teamData = taskProvider.getCollaboratorsSnapshot(task['_id']);
+          print("Team data for task ${task['_id']}: $teamData");
+          String teamText = '';
+          if (teamData != null && teamData['user'] != null) {
+            final user = teamData['user'];
+            final collaborators = teamData['collaborators'] as List? ?? [];
+            final userName = user['name'] ?? '';
+            final userOccupation = user['occupation'] ?? '';
+            final collaboratorsText = collaborators.map((e) => (e['name'] != null && e['occupation'] != null) ? "${e['name']} (${e['occupation']})" : "").join('\n');
+            teamText = "$userName ($userOccupation)\n$collaboratorsText";
+          }
+
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Padding(
@@ -190,6 +273,22 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                   ),
                 ],
                 ),
+
+                task['collaborators'] != null && (task['collaborators'] as List).isNotEmpty
+                ? Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.04),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: _buildMemberRows(teamText, context),
+                    )
+                  )
+                : tabIndex == 2 ? SizedBox(child: Center(child: CircularProgressIndicator())) : const SizedBox.shrink(),
+
                 const SizedBox(height: 8),
                 if (task['description'] != null && task['description'].toString().isNotEmpty)
                 Text(
