@@ -78,6 +78,85 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
     }
   }
 
+  void _showCommentsBottomSheet(BuildContext context, String taskId, List<String> comments) {
+    final TextEditingController commentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // So keyboard doesn't hide the text field
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 12,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 50,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                'Comments',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 10),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) => ListTile(
+                    leading: const Icon(Icons.person_outline),
+                    title: Text(comments[index]),
+                  ),
+                ),
+              ),
+              const Divider(),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: commentController,
+                      decoration: const InputDecoration(
+                        hintText: 'Add a comment...',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.send, color: AppColors.primary),
+                    onPressed: () {
+                      final newComment = commentController.text.trim();
+                      if (newComment.isNotEmpty) {
+                        // Add comment logic (e.g., send to Firestore)
+                        _taskProvider?.addCommentToTask(taskId, newComment);
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
   // Helper to produce an uppercase initial for an entry like "Name (Occupation)".
   String _initialForEntry(String entry) {
     final trimmed = entry.trim();
@@ -226,6 +305,14 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
                         ? const Icon(Icons.check_circle, color: Colors.green)
                         : const Icon(Icons.check_circle, color: Colors.grey),
                   ),
+                  task['collaborators'] != null && (task['collaborators'] as List).isNotEmpty
+                  ? IconButton(
+                      onPressed: () {
+                        _showCommentsBottomSheet(context, task['_id'], task['comments'] != null ? List<String>.from(task['comments']) : []);
+                      },
+                      icon: const Icon(Icons.comment, color: AppColors.primary),
+                    )
+                  : const SizedBox.shrink(),
                   IconButton(
                     onPressed: () {
                       showDialog(

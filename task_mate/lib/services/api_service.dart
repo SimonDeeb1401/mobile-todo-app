@@ -273,4 +273,18 @@ class ApiService {
       return null;
     }
   }
+
+  static Future<bool> addCommentToTask(String taskId, String comment) async {
+    try {
+      final token = await storage.read(key: "jwt");
+      final res = await http.post(Uri.parse("$baseUrl/tasks/$taskId/comments"),
+          headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+          body: jsonEncode({"comment": comment}));
+      return res.statusCode == 200;
+    } catch (e) {
+      print("AddCommentToTask error: $e");
+      print("Trying to connect to: $baseUrl/tasks/$taskId/comments");
+      return false;
+    }
+  }
 }

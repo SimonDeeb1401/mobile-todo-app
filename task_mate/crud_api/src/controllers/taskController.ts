@@ -25,7 +25,7 @@ export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
     
     const user = authResult.user;
     const { title, description, priority, deadline, completed, collaborators } = parseBody(event);
-    
+
     if (!title) {
       return createResponse(400, { error: "Title is required" });
     }
@@ -53,7 +53,8 @@ export const createTask = async (event: LambdaEvent): Promise<LambdaResponse> =>
       completed: completed || false, 
       user: user.id,
       collaborators: collaboratorIds,
-      orderIndex: newOrderIndex
+      orderIndex: newOrderIndex,
+      comments: [],
     });
     
     await task.save();
@@ -408,6 +409,42 @@ export const getCollaboratorsData = async (event: LambdaEvent): Promise<LambdaRe
   catch (err) {
     console.error("Get collaborators data error:", err);
     return createResponse(500, { error: "Failed to get collaborators data" });
+  }
+};
+
+export const addCommentToTask = async (event: LambdaEvent): Promise<LambdaResponse> => {
+  try {
+    await connectToDatabase();  
+
+    const authResult = verifyTokenLambda(event);
+    if (isErrorResponse(authResult)) {
+      return authResult;
+    }
+
+    const user = authResult.user;
+    const taskId = event.pathParameters?.id;
+    const { comment } = parseBody(event);
+
+    console.log("Event received for addCommentToTask:", event);
+
+    const task = await Task.findOne({ _id: taskId, $or: [{ user: user.id }, { collaborators: { $elemMatch: { $eq: user.id } } }] });
+    if (!task) {
+      console.log("Task not found");
+      return createResponse(404, { error: "Task not found" });
+    }
+
+    //task.comments.push({ user: user.id, text: comment });
+    task.comments?.push({ user: new mongoose.Types.ObjectId(user.id), text: comment , createdAt: new Date() });
+    await task.save();
+
+    console.log("Comment added successfully:", { taskId, userId: user.id, comment });
+
+    return createResponse(200, { success: true, task });
+  }
+
+  catch (err) {
+    console.error("Add comment to task error:", err);
+    return createResponse(500, { error: "Failed to add comment to task" });
   }
 };
 

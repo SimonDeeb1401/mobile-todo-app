@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTask, getTasks, updateTask, deleteTask, moveTask, reorderAllTasks, getCollaboratorsData } from "../controllers/taskController.js";
+import { createTask, getTasks, updateTask, deleteTask, moveTask, reorderAllTasks, getCollaboratorsData, addCommentToTask } from "../controllers/taskController.js";
 import { verifyTokenLambda } from "../middleware/authMiddleware.js";
 
 const router = Router();
@@ -17,5 +17,6 @@ router.patch("/:id", verifyTokenLambda, updateTask);
 router.patch("/:id/move", verifyTokenLambda, moveTask);
 router.post("/reorder", verifyTokenLambda, reorderAllTasks);
 router.get("/:id/collaborators", verifyTokenLambda, getCollaboratorsData);
+router.post("/:id/comments", verifyTokenLambda, addCommentToTask);
 
 export default router;

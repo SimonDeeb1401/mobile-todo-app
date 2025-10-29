@@ -112,6 +112,13 @@ functions:
           method: get
           path: /api/tasks/{id}/collaborators
 
+  addCommentToTask:
+    handler: dist/controllers/taskController.addCommentToTask
+    events:
+      - httpApi:
+          method: post
+          path: /api/tasks/{id}/comments
+
 package:
   patterns:
     - '!src/**'

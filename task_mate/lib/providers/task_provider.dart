@@ -589,21 +589,38 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> _refreshFullCollaboratorsFromServer(String taskId) async {
-  try {
-    final data = await ApiService.getCollaboratorsData(taskId);
-    if (data != null) {
-      // Replace the cached entry with the full data from server (has name, occupation, etc).
-      _collaboratorsSnapshot[taskId] = data;
-      if (kDebugMode) print('Refreshed full collaborators for $taskId: $data');
-      notifyListeners();
-    } else {
-      if (kDebugMode) print('No collaborator data returned from server for $taskId');
+    try {
+      final data = await ApiService.getCollaboratorsData(taskId);
+      if (data != null) {
+        // Replace the cached entry with the full data from server (has name, occupation, etc).
+        _collaboratorsSnapshot[taskId] = data;
+        if (kDebugMode) print('Refreshed full collaborators for $taskId: $data');
+        notifyListeners();
+      } else {
+        if (kDebugMode) print('No collaborator data returned from server for $taskId');
+      }
+    } catch (e) {
+      if (kDebugMode) print('Error refreshing collaborators for $taskId: $e');
+      // Optionally: keep the minimal email-only cache; don't overwrite with null.
     }
-  } catch (e) {
-    if (kDebugMode) print('Error refreshing collaborators for $taskId: $e');
-    // Optionally: keep the minimal email-only cache; don't overwrite with null.
   }
-}
+
+  Future<bool> addCommentToTask(String taskId, String comment) async {
+    try {
+      final success = await ApiService.addCommentToTask(taskId, comment);
+      if (success) {
+        // Optionally refresh tasks or specific task data here
+        await fetchTasksSorted();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding comment to task: $e');
+      }
+      return false;
+    }
+  }
 
   @override
   void dispose() {
