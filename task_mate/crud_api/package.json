@@ -4,9 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "ts-node-dev src/index.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/server.js",
     "deploy": "npm run build && serverless deploy",
     "remove": "serverless remove",
     "logs": "serverless logs -f",
@@ -33,6 +33,7 @@
     "@types/node": "^24.2.1",
     "serverless": "^4.40.0",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.23.1",
     "typescript": "^5.9.2"
   }
 }
