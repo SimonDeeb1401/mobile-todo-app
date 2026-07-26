@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { ApiError, login } from '../services/api'
 import './LoginPage.css'
 
 interface LoginPageProps {
-  onLogin?: (email: string, password: string) => void
+  // login() stores the token itself, so the parent only needs the signal.
+  onLogin?: () => void
 }
 
 function LoginPage({ onLogin }: LoginPageProps) {
@@ -12,7 +14,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (!email || !password) {
@@ -22,8 +24,22 @@ function LoginPage({ onLogin }: LoginPageProps) {
 
     setError('')
     setSubmitting(true)
-    onLogin?.(email, password)
-    setSubmitting(false)
+
+    try {
+      await login(email, password)
+      onLogin?.()
+    } catch (err) {
+      // An ApiError means the backend answered, and its `error` field is
+      // already user-readable ("Invalid credentials"). Anything else is a
+      // failed fetch, whose "Failed to fetch" message is not.
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Could not reach the server. Please try again.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (

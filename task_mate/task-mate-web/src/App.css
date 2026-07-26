@@ -1,0 +1,33 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.app-shell h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.app-shell p {
+  margin: 0 0 0.5rem;
+}
+
+.app-signout {
+  padding: 0.625rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background: #646cff;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.app-signout:hover {
+  background: #535bf2;
+}

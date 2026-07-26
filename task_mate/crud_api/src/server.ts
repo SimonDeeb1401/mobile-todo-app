@@ -33,8 +33,10 @@ app.patch("/api/tasks/:id", wrap(tasks.updateTask));
 app.delete("/api/tasks/:id", wrap(tasks.deleteTask));
 app.patch("/api/tasks/:id/move", wrap(tasks.moveTask));
 app.post("/api/tasks/reorder", wrap(tasks.reorderAllTasks));
+app.get("/api/tasks/:id/collaborators", wrap(tasks.getCollaboratorsData));
 app.get("/api/user/sortPreference", wrap(user.getSortPreference));
 app.patch("/api/user/sortPreference", wrap(user.updateSortPreference));
+app.get("/api/user/profile", wrap(user.getUserProfile));
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API listening on ${PORT}`));
