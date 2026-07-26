@@ -155,6 +155,18 @@ async function handleResponse<T>(res: Response): Promise<T> {
     throw new ApiError(payload?.error ?? res.statusText, res.status, payload?.details)
   }
 
+  // A 2xx carrying something other than JSON is a server or proxy problem, not
+  // a network one — e.g. a dev-server HTML fallback. Throw rather than hand
+  // back null, so callers don't dereference it and report an unreachable
+  // server that in fact answered. An empty body (`text` falsy) is legitimate
+  // and still resolves to null.
+  if (text && body === null) {
+    throw new ApiError('Unexpected response from the server', res.status, {
+      url: res.url,
+      contentType: res.headers.get('content-type'),
+    })
+  }
+
   return body as T
 }
 
