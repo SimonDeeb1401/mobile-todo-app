@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import HomePage from './components/HomePage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import { isLoggedIn, logout } from './services/api'
-import './App.css'
 
 function App() {
   // Seeded from localStorage so a refresh keeps the session.
@@ -31,15 +31,10 @@ function App() {
     )
   }
 
-  return (
-    <div className="app-shell">
-      <h1>Task Mate</h1>
-      <p>You're signed in.</p>
-      <button className="app-signout" onClick={handleSignOut}>
-        Sign out
-      </button>
-    </div>
-  )
+  // HomePage is the authenticated shell and owns the Tasks/Profile toggle. The
+  // sign-out control lives in its ProfilePage now, so this only hands down the
+  // handler that clears the token.
+  return <HomePage onSignOut={handleSignOut} />
 }
 
 export default App

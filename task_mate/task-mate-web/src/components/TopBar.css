@@ -1,0 +1,179 @@
+/* Sticky rather than fixed so it still participates in the flex column and
+   doesn't need a spacer. Works because .home-body scrolls at the document
+   level — giving it its own overflow would strand this bar. */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--tm-space-sm);
+  padding: var(--tm-space-sm) var(--tm-space-md);
+  background: var(--tm-surface);
+  box-shadow: 0 2px 4px rgba(158, 158, 158, 0.2);
+}
+
+.top-bar-lead {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Explicit size and margin because index.css styles every h1 at 56px with
+   32px block margins. 20px / 600 is AppTextStyles.heading3. */
+.top-bar-title {
+  display: flex;
+  align-items: center;
+  gap: var(--tm-space-sm);
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--tm-primary);
+}
+
+.top-bar-mark {
+  display: inline-flex;
+}
+
+.top-bar-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.top-bar-search-input {
+  width: 100%;
+  padding: var(--tm-space-sm) 32px var(--tm-space-sm) 0;
+  border: none;
+  background: transparent;
+  color: var(--tm-text);
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: normal;
+  /* Kills Safari's built-in type="search" decorations. */
+  appearance: none;
+}
+
+.top-bar-search-input:focus {
+  outline: none;
+}
+
+.top-bar-search-input::placeholder {
+  color: var(--tm-text-hint);
+}
+
+.top-bar-search-clear {
+  position: absolute;
+  right: 0;
+  display: inline-flex;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: var(--tm-text-hint);
+  cursor: pointer;
+}
+
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.top-bar-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--tm-primary);
+  cursor: pointer;
+}
+
+.top-bar-action:hover {
+  background: rgba(30, 58, 138, 0.08);
+}
+
+.top-bar-sort {
+  position: relative;
+  display: inline-flex;
+}
+
+.top-bar-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 4px;
+  border-radius: var(--tm-radius-md);
+  background: var(--tm-surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  /* #root centres text; menu rows read as a list, so undo it here. */
+  text-align: left;
+}
+
+.top-bar-menu-item,
+.top-bar-menu-order {
+  padding: var(--tm-space-sm) var(--tm-space-md);
+  border: none;
+  border-radius: var(--tm-radius-sm);
+  background: none;
+  color: var(--tm-text);
+  font: inherit;
+  font-size: 15px;
+  letter-spacing: normal;
+  text-align: left;
+  cursor: pointer;
+}
+
+.top-bar-menu-item:hover,
+.top-bar-menu-order:hover {
+  background: rgba(30, 58, 138, 0.08);
+}
+
+.top-bar-menu-item-active {
+  color: var(--tm-primary);
+  font-weight: 600;
+}
+
+/* The mobile dialog separates its mode radios from the ascending switch. */
+.top-bar-menu-order {
+  margin-top: 4px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0 0 var(--tm-radius-sm) var(--tm-radius-sm);
+  color: var(--tm-text-secondary);
+  font-size: 14px;
+}
+
+/* AppDecorations.iconContainerDecoration: primary at 10% in a circle. */
+.top-bar-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: 4px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(30, 58, 138, 0.1);
+  color: var(--tm-primary);
+  cursor: pointer;
+}
+
+.top-bar-avatar:hover {
+  background: rgba(30, 58, 138, 0.2);
+}
+
+.top-bar-avatar-active {
+  background: var(--tm-primary);
+  color: #fff;
+}
+
+.top-bar-avatar-active:hover {
+  background: var(--tm-secondary);
+}

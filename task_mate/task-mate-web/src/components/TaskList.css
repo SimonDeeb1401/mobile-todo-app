@@ -1,0 +1,91 @@
+.task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tm-space-sm);
+}
+
+/* AppDecorations.cardDecoration from app_theme.dart. */
+.task-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--tm-space-md);
+  padding: var(--tm-space-md);
+  border-radius: var(--tm-radius-md);
+  background: var(--tm-surface);
+  box-shadow: 0 3px 10px rgba(158, 158, 158, 0.25);
+}
+
+.task-list-check {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--tm-primary);
+  cursor: pointer;
+}
+
+.task-list-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tm-text);
+  /* Long unbroken titles would otherwise push the badges off the card. */
+  overflow-wrap: anywhere;
+}
+
+.task-list-title-done {
+  text-decoration: line-through;
+  color: var(--tm-text-secondary);
+}
+
+.task-list-priority {
+  flex: none;
+  padding: 4px var(--tm-space-sm);
+  border-radius: var(--tm-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* The mobile app's _getPriorityColor: red / orange / lightGreenAccent, with
+   black text on low because the pale green cannot carry white. */
+.task-list-priority-high {
+  background: var(--tm-error);
+  color: #fff;
+}
+
+.task-list-priority-medium {
+  background: #f57c00;
+  color: #fff;
+}
+
+.task-list-priority-low {
+  background: #ccff90;
+  color: var(--tm-text);
+}
+
+.task-list-deadline {
+  flex: none;
+  font-size: 14px;
+  color: var(--tm-text-secondary);
+  white-space: nowrap;
+}
+
+.task-list-empty {
+  padding: var(--tm-space-xl);
+  font-size: 16px;
+  color: var(--tm-text-secondary);
+  text-align: center;
+}
+
+/* Let the badges drop below a long title instead of squeezing it. */
+@media (max-width: 1023px) {
+  .task-list-item {
+    flex-wrap: wrap;
+    gap: var(--tm-space-sm) var(--tm-space-md);
+  }
+}

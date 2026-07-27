@@ -1,0 +1,130 @@
+/* flex-start rather than the mobile screen's dead centre: on a tall desktop
+   window a vertically centred card drifts far from the top bar it belongs to. */
+.profile-page {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--tm-space-lg);
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--tm-space-lg);
+  border-radius: var(--tm-radius-xl);
+  background: var(--tm-surface);
+  box-shadow: 0 6px 20px rgba(158, 158, 158, 0.3);
+  box-sizing: border-box;
+}
+
+/* The 80px Icons.person from the mobile profile card. */
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: rgba(30, 58, 138, 0.1);
+  color: var(--tm-primary);
+}
+
+.profile-avatar svg {
+  width: 44px;
+  height: 44px;
+}
+
+/* Explicit, because index.css styles every h2 at 24px/500 with its own margin.
+   24px bold is AppTextStyles.heading2. */
+.profile-name {
+  margin: var(--tm-space-md) 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: normal;
+  color: var(--tm-text);
+  text-align: center;
+}
+
+.profile-details {
+  margin: 0;
+}
+
+.profile-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tm-space-md);
+  padding: var(--tm-space-sm) 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.profile-row dt {
+  font-size: 14px;
+  color: var(--tm-text-secondary);
+}
+
+.profile-row dd {
+  margin: 0;
+  font-size: 16px;
+  color: var(--tm-text);
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.profile-status {
+  padding: var(--tm-space-lg) 0;
+  color: var(--tm-text-secondary);
+  text-align: center;
+}
+
+.profile-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tm-space-md);
+  padding: var(--tm-space-md) 0;
+  color: var(--tm-error);
+  text-align: center;
+}
+
+.profile-retry {
+  padding: var(--tm-space-sm) var(--tm-space-md);
+  border: none;
+  border-radius: var(--tm-radius-sm);
+  background: var(--tm-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.profile-retry:hover {
+  background: var(--tm-secondary);
+}
+
+.profile-signout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tm-space-sm);
+  width: 100%;
+  margin-top: var(--tm-space-lg);
+  padding: var(--tm-space-md);
+  border: none;
+  border-radius: var(--tm-radius-lg);
+  background: var(--tm-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.profile-signout:hover {
+  background: var(--tm-secondary);
+}

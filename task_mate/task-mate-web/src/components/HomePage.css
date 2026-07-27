@@ -1,0 +1,123 @@
+/* index.css sets a global 18px/145% body font with letter-spacing, centres all
+   text on #root, and flips its tokens under prefers-color-scheme: dark. The
+   mobile app this ports is light-only, so the shell pins its own typography and
+   colour scheme rather than inheriting half a dark theme. */
+.home-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background: var(--tm-bg);
+  color: var(--tm-text);
+  font-size: 16px;
+  letter-spacing: normal;
+  text-align: left;
+  /* Without this, the OS dark preference renders the task checkboxes and
+     scrollbars dark inside a deliberately light page. */
+  color-scheme: light;
+}
+
+/* Full-bleed white so the divider runs the width of the window. */
+.home-toolbar {
+  background: var(--tm-surface);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Same max-width and padding as .home-body, so the tab strip and the add
+   button line up with the edges of the task cards underneath. */
+.home-toolbar-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--tm-space-md);
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 var(--tm-space-md);
+  box-sizing: border-box;
+}
+
+/* No overflow here on purpose: the document scrolls, which is what makes
+   .top-bar's position: sticky work. */
+.home-body {
+  flex: 1;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--tm-space-md);
+  box-sizing: border-box;
+}
+
+.home-status,
+.home-empty {
+  padding: var(--tm-space-xl);
+  color: var(--tm-text-secondary);
+  text-align: center;
+}
+
+.home-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tm-space-md);
+}
+
+/* A CSS stand-in for the mobile CircularProgressIndicator — no dependency. */
+.home-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(30, 58, 138, 0.2);
+  border-top-color: var(--tm-primary);
+  border-radius: 50%;
+  animation: home-spin 0.8s linear infinite;
+}
+
+@keyframes home-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+.home-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tm-space-md);
+  max-width: 480px;
+  margin: var(--tm-space-lg) auto;
+  padding: var(--tm-space-lg);
+  border-radius: var(--tm-radius-md);
+  background: var(--tm-surface);
+  box-shadow: 0 3px 10px rgba(158, 158, 158, 0.25);
+  color: var(--tm-error);
+  text-align: center;
+}
+
+.home-retry {
+  padding: var(--tm-space-sm) var(--tm-space-md);
+  border: none;
+  border-radius: var(--tm-radius-sm);
+  background: var(--tm-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.home-retry:hover {
+  background: var(--tm-secondary);
+}
+
+/* Room for the floating add button so it never sits on the last task row. */
+@media (max-width: 1023px) {
+  .home-body {
+    padding-bottom: 88px;
+  }
+}

@@ -1,0 +1,61 @@
+/* Desktop-first, matching the max-width style index.css already uses.
+   Base state is the inline pill; the media query below turns it into a FAB. */
+.add-task-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tm-space-sm);
+  flex: none;
+  margin-bottom: var(--tm-space-sm);
+  padding: var(--tm-space-sm) var(--tm-space-md);
+  border: none;
+  border-radius: var(--tm-radius-lg);
+  background: var(--tm-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: normal;
+  cursor: pointer;
+  /* AppDecorations.buttonDecoration from app_theme.dart. */
+  box-shadow: 0 8px 15px rgba(30, 58, 138, 0.3);
+}
+
+.add-task-button:hover {
+  background: var(--tm-secondary);
+}
+
+.add-task-button-glyph {
+  display: inline-flex;
+}
+
+/* Below the breakpoint index.css already uses, the pill becomes the mobile
+   app's floating action button.
+
+   Because this is `position: fixed`, no ancestor of the button may set
+   transform, filter, perspective, will-change or contain — any of those would
+   become the containing block and pin the FAB inside the toolbar instead of
+   the viewport. HomePage.css also adds bottom padding to .home-body at this
+   width so the button never covers the last task row. */
+@media (max-width: 1023px) {
+  .add-task-button {
+    position: fixed;
+    right: var(--tm-space-md);
+    bottom: var(--tm-space-md);
+    z-index: 20;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .add-task-button svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .add-task-button-label {
+    display: none;
+  }
+}
