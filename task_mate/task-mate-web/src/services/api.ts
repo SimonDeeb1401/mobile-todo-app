@@ -121,6 +121,22 @@ export class ApiError extends Error {
   }
 }
 
+// Thrown when the request never produced a response at all: connection
+// refused, DNS failure, CORS block, or a missing VITE_API_URL. Distinct from
+// ApiError, which means the backend answered. The message is written to be
+// shown to the user as-is, and names the URL so a wrong port or an API that
+// isn't running is obvious from the screen alone.
+export class NetworkError extends Error {
+  url: string
+
+  constructor(url: string, message?: string, cause?: unknown) {
+    super(message ?? `Could not reach the server at ${url}. Is the API running?`)
+    this.name = 'NetworkError'
+    this.url = url
+    this.cause = cause
+  }
+}
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
@@ -171,7 +187,29 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, { ...init, headers: authHeaders() })
+  // Vite reads .env only at dev-server start, so a missing or misspelled
+  // VITE_API_URL leaves BASE_URL undefined and would otherwise fetch
+  // "undefined/auth/login" relative to the Vite origin — a 404 of HTML that
+  // looks nothing like the real problem.
+  if (!BASE_URL) {
+    throw new NetworkError(
+      path,
+      'VITE_API_URL is not set. Add it to task-mate-web/.env and restart the dev server.',
+    )
+  }
+
+  const url = `${BASE_URL}${path}`
+
+  let res: Response
+  try {
+    res = await fetch(url, { ...init, headers: authHeaders() })
+  } catch (cause) {
+    // fetch rejects with a bare "Failed to fetch" that names neither the URL
+    // nor the reason, so log the original before replacing it.
+    console.error(`[api] request to ${url} never reached a server:`, cause)
+    throw new NetworkError(url, undefined, cause)
+  }
+
   return handleResponse<T>(res)
 }
 
@@ -195,10 +233,18 @@ export async function signup(
 
 // Stores the token in localStorage and returns it.
 export async function login(email: string, password: string): Promise<string> {
-  const data = await request<{ token: string }>('/auth/login', {
+  const data = await request<{ token: string } | null>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   })
+
+  // An empty 200 body resolves to null (see handleResponse), and dereferencing
+  // it here would throw a TypeError that callers can only report as a generic
+  // failure. The server answered, so this is an ApiError.
+  if (!data?.token) {
+    throw new ApiError('Login response contained no token', 200)
+  }
+
   localStorage.setItem(TOKEN_KEY, data.token)
   return data.token
 }

@@ -1,4 +1,4 @@
-.login-page {
+.signup-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -6,52 +6,53 @@
   padding: 1rem;
 }
 
-.login-card {
+.signup-card {
   width: 100%;
-  max-width: 360px;
+  /* Wider than the login card, which only has to hold two fields. */
+  max-width: 400px;
   padding: 2rem;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
-.login-card h1 {
+.signup-card h1 {
   margin: 0 0 1.5rem;
   font-size: 1.5rem;
   text-align: center;
 }
 
-.login-field {
+.signup-field {
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
 }
 
-.login-field label {
+.signup-field label {
   margin-bottom: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
 }
 
-.login-field input {
+.signup-field input {
   padding: 0.625rem 0.75rem;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   font-size: 1rem;
 }
 
-.login-field input:focus {
+.signup-field input:focus {
   outline: 2px solid #646cff;
   outline-offset: 1px;
 }
 
-.login-error {
+.signup-error {
   color: #d33;
   font-size: 0.875rem;
   margin: -0.5rem 0 1rem;
 }
 
-.login-submit {
+.signup-submit {
   width: 100%;
   padding: 0.625rem 0.75rem;
   border-radius: 8px;
@@ -63,22 +64,22 @@
   cursor: pointer;
 }
 
-.login-submit:hover {
+.signup-submit:hover {
   background: #535bf2;
 }
 
-.login-submit:disabled {
+.signup-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.login-switch {
+.signup-switch {
   margin: 1rem 0 0;
   font-size: 0.875rem;
   text-align: center;
 }
 
-.login-link {
+.signup-link {
   padding: 0;
   border: none;
   background: none;

@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, login } from '../services/api'
+import { ApiError, NetworkError, login } from '../services/api'
 import './LoginPage.css'
 
 interface LoginPageProps {
   // login() stores the token itself, so the parent only needs the signal.
   onLogin?: () => void
+  onShowSignup?: () => void
 }
 
-function LoginPage({ onLogin }: LoginPageProps) {
+function LoginPage({ onLogin, onShowSignup }: LoginPageProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -29,13 +30,15 @@ function LoginPage({ onLogin }: LoginPageProps) {
       await login(email, password)
       onLogin?.()
     } catch (err) {
-      // An ApiError means the backend answered, and its `error` field is
-      // already user-readable ("Invalid credentials"). Anything else is a
-      // failed fetch, whose "Failed to fetch" message is not.
+      console.error('[login] sign-in failed:', err)
+      // ApiError means the backend answered and its `error` field is already
+      // user-readable ("Invalid credentials"); NetworkError means the request
+      // never got there and carries the URL it tried. Anything else is a bug in
+      // this client, and saying "could not reach the server" would misdirect.
       setError(
-        err instanceof ApiError
+        err instanceof ApiError || err instanceof NetworkError
           ? err.message
-          : 'Could not reach the server. Please try again.',
+          : 'Something went wrong signing in. Please try again.',
       )
     } finally {
       setSubmitting(false)
@@ -72,6 +75,12 @@ function LoginPage({ onLogin }: LoginPageProps) {
             {submitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+        <p className="login-switch">
+          Don't have an account?{' '}
+          <button type="button" className="login-link" onClick={onShowSignup}>
+            Sign up
+          </button>
+        </p>
       </div>
     </div>
   )
