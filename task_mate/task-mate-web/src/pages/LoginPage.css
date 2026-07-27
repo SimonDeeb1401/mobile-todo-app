@@ -4,20 +4,33 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  background: var(--tm-bg);
+  color: var(--tm-text);
+  /* index.css sets an 18px base with letter-spacing and flips its tokens under
+     prefers-color-scheme: dark. The app is light-only, so pin both here the way
+     .home-page does — otherwise OS dark mode gives this page a dark backdrop
+     and dark form controls behind a white card. */
+  font-size: 16px;
+  letter-spacing: normal;
+  color-scheme: light;
 }
 
+/* Surface, radius and shadow of the profile card on the home page. */
 .login-card {
   width: 100%;
   max-width: 360px;
   padding: 2rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border-radius: var(--tm-radius-xl);
+  background: var(--tm-surface);
+  box-shadow: 0 6px 20px rgba(158, 158, 158, 0.3);
 }
 
 .login-card h1 {
   margin: 0 0 1.5rem;
-  font-size: 1.5rem;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: normal;
+  color: var(--tm-text);
   text-align: center;
 }
 
@@ -31,40 +44,45 @@
   margin-bottom: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
+  color: var(--tm-text-secondary);
 }
 
 .login-field input {
   padding: 0.625rem 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--tm-radius-sm);
   border: 1px solid rgba(0, 0, 0, 0.2);
+  background: var(--tm-surface);
+  color: var(--tm-text);
+  font: inherit;
   font-size: 1rem;
 }
 
 .login-field input:focus {
-  outline: 2px solid #646cff;
+  outline: 2px solid var(--tm-primary);
   outline-offset: 1px;
 }
 
 .login-error {
-  color: #d33;
+  color: var(--tm-error);
   font-size: 0.875rem;
   margin: -0.5rem 0 1rem;
 }
 
 .login-submit {
   width: 100%;
-  padding: 0.625rem 0.75rem;
-  border-radius: 8px;
+  padding: 0.75rem;
+  border-radius: var(--tm-radius-lg);
   border: none;
-  background: #646cff;
-  color: white;
+  background: var(--tm-primary);
+  color: #fff;
+  font: inherit;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .login-submit:hover {
-  background: #535bf2;
+  background: var(--tm-secondary);
 }
 
 .login-submit:disabled {
@@ -75,6 +93,7 @@
 .login-switch {
   margin: 1rem 0 0;
   font-size: 0.875rem;
+  color: var(--tm-text-secondary);
   text-align: center;
 }
 
@@ -82,8 +101,9 @@
   padding: 0;
   border: none;
   background: none;
-  color: #646cff;
+  color: var(--tm-primary);
   font: inherit;
+  font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
 }
