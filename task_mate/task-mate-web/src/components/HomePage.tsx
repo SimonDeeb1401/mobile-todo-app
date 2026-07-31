@@ -6,6 +6,7 @@ import TaskTabs from './TaskTabs'
 import type { TabKey } from './TaskTabs'
 import TaskList from './TaskList'
 import AddTaskButton from './AddTaskButton'
+import AddTaskPage from './AddTaskPage'
 import ProfilePage from './ProfilePage'
 import './HomePage.css'
 
@@ -60,8 +61,11 @@ function HomePage({ onSignOut }: HomePageProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [view, setView] = useState<'tasks' | 'profile'>('tasks')
+  const [view, setView] = useState<'tasks' | 'profile' | 'addTask'>('tasks')
   const [activeTab, setActiveTab] = useState<TabKey>('pending')
+  // The mobile add-task screen confirms with a green SnackBar before popping.
+  // This is that message; the effect below clears it.
+  const [notice, setNotice] = useState('')
   // The applied query, already trimmed by TopBar — either '' or 2+ characters.
   const [search, setSearch] = useState('')
   // The mobile defaults, from UserProvider. Not persisted via
@@ -109,6 +113,17 @@ function HomePage({ onSignOut }: HomePageProps) {
     loadTasks()
   }, [loadTasks])
 
+  // SnackBarBehavior.floating auto-dismisses on mobile, so the web notice does
+  // too. Keyed off the message rather than a boolean, so a second creation
+  // restarts the countdown instead of inheriting the first one's remaining time.
+  useEffect(() => {
+    if (!notice) {
+      return
+    }
+    const timer = setTimeout(() => setNotice(''), 4000)
+    return () => clearTimeout(timer)
+  }, [notice])
+
   const handleRetry = () => {
     setError('')
     setLoading(true)
@@ -147,7 +162,22 @@ function HomePage({ onSignOut }: HomePageProps) {
     activeTab === 'pending' ? pending : activeTab === 'completed' ? completed : shared
 
   const handleAddTask = () => {
-    // TODO: open the add-task form (port of lib/screens/add_task.dart).
+    setNotice('')
+    setView('addTask')
+  }
+
+  // AddTaskPage hands back the row the API created, so the list is patched in
+  // place rather than refetched — a GET here would also re-sort by the stale
+  // sortPreference baked into the JWT (see getTasks in services/api.ts).
+  const handleTaskCreated = (task: Task) => {
+    setTasks((current) => [...current, task])
+    // A new task is never completed, so it lands under Pending — unless it has
+    // collaborators, which puts it under Shared regardless (the same split the
+    // useMemo above applies). Following it means the user always sees the task
+    // they just created instead of an unchanged list.
+    setActiveTab((task.collaborators?.length ?? 0) > 0 ? 'shared' : 'pending')
+    setNotice('Task created successfully!')
+    setView('tasks')
   }
 
   const handleFilter = () => {
@@ -234,13 +264,22 @@ function HomePage({ onSignOut }: HomePageProps) {
         onSearchChange={setSearch}
         onSortChange={setSort}
         onFilter={handleFilter}
+        // Written against `profile` rather than `tasks` so it matches the
+        // avatar's own label, which reads "Profile" for every view but that one.
+        // From the add-task form the avatar therefore leaves the form, exactly
+        // as it says it will.
         onToggleView={() =>
-          setView((current) => (current === 'tasks' ? 'profile' : 'tasks'))
+          setView((current) => (current === 'profile' ? 'tasks' : 'profile'))
         }
       />
 
       {view === 'profile' ? (
         <ProfilePage onSignOut={onSignOut} />
+      ) : view === 'addTask' ? (
+        <AddTaskPage
+          onCreated={handleTaskCreated}
+          onCancel={() => setView('tasks')}
+        />
       ) : (
         <>
           {/* Rendered through loading and error too, with zero counts, so the
@@ -260,6 +299,15 @@ function HomePage({ onSignOut }: HomePageProps) {
             </div>
           </div>
           <main className="home-body">{body}</main>
+
+          {/* role="status" rather than "alert": this is a confirmation, so it
+              should be announced without interrupting whatever the user is
+              doing next. */}
+          {notice && (
+            <p className="home-notice" role="status">
+              {notice}
+            </p>
+          )}
         </>
       )}
     </div>

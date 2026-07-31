@@ -115,9 +115,32 @@
   background: var(--tm-secondary);
 }
 
+/* The floating success SnackBar from the mobile add-task screen — same green
+   fill and rounded corners, pinned rather than inline so it doesn't shift the
+   task list when it appears and disappears. */
+.home-notice {
+  position: fixed;
+  bottom: var(--tm-space-lg);
+  left: 50%;
+  z-index: 20;
+  max-width: calc(100vw - 2 * var(--tm-space-md));
+  padding: var(--tm-space-sm) var(--tm-space-md);
+  border-radius: var(--tm-radius-lg);
+  background: #4caf50;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 15px;
+  transform: translateX(-50%);
+}
+
 /* Room for the floating add button so it never sits on the last task row. */
 @media (max-width: 1023px) {
   .home-body {
     padding-bottom: 88px;
+  }
+
+  /* Above the FAB, which is a fixed bottom-right circle at these widths. */
+  .home-notice {
+    bottom: 88px;
   }
 }

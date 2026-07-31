@@ -130,3 +130,84 @@ export function LogoutIcon() {
     </svg>
   )
 }
+
+// Icons.arrow_back — the add-task screen's AppBar leading button.
+export function ArrowBackIcon() {
+  return (
+    <svg {...base}>
+      <line x1="20" y1="12" x2="5" y2="12" />
+      <path d="M11 5l-6 7 6 7" />
+    </svg>
+  )
+}
+
+// Icons.add_task — the 80px header glyph on the add-task form. A list with a
+// plus reads more clearly at that size than Material's clipboard-and-tick.
+export function AddTaskIcon() {
+  return (
+    <svg {...base}>
+      <line x1="4" y1="6" x2="16" y2="6" />
+      <line x1="4" y1="11" x2="13" y2="11" />
+      <line x1="4" y1="16" x2="10" y2="16" />
+      <line x1="17" y1="12" x2="17" y2="20" />
+      <line x1="13" y1="16" x2="21" y2="16" />
+    </svg>
+  )
+}
+
+// Icons.title — a capital T, for the task title field.
+export function TitleIcon() {
+  return (
+    <svg {...base}>
+      <line x1="5" y1="6" x2="19" y2="6" />
+      <line x1="12" y1="6" x2="12" y2="19" />
+    </svg>
+  )
+}
+
+// Icons.description — a folded document with two text lines.
+export function DescriptionIcon() {
+  return (
+    <svg {...base}>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+      <line x1="9" y1="13" x2="15" y2="13" />
+      <line x1="9" y1="17" x2="15" y2="17" />
+    </svg>
+  )
+}
+
+// Icons.flag — the priority marker. Left unfilled so the call site can tint it
+// with `color` alone, the way the mobile screen recolours the flag per priority.
+export function FlagIcon() {
+  return (
+    <svg {...base}>
+      <line x1="5" y1="21" x2="5" y2="4" />
+      <path d="M5 4h13l-2.5 4.5L18 13H5" />
+    </svg>
+  )
+}
+
+// Icons.calendar_today — the deadline field.
+export function CalendarIcon() {
+  return (
+    <svg {...base}>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <line x1="8" y1="3" x2="8" y2="7" />
+      <line x1="16" y1="3" x2="16" y2="7" />
+    </svg>
+  )
+}
+
+// Icons.person_add_alt_1 — the collaborator email field.
+export function PersonAddIcon() {
+  return (
+    <svg {...base}>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+      <line x1="18" y1="7" x2="18" y2="13" />
+      <line x1="15" y1="10" x2="21" y2="10" />
+    </svg>
+  )
+}
