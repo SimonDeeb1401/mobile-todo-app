@@ -43,15 +43,25 @@ function TaskList({ tasks, emptyMessage, onToggleComplete }: TaskListProps) {
             aria-label={`Mark ${task.title} complete`}
             onChange={() => onToggleComplete?.(task)}
           />
-          <span
-            className={
-              task.completed
-                ? 'task-list-title task-list-title-done'
-                : 'task-list-title'
-            }
-          >
-            {task.title}
-          </span>
+          {/* Title and description share one column so the badges stay on the
+              card's first line rather than being pushed down by a description. */}
+          <div className="task-list-main">
+            <span
+              className={
+                task.completed
+                  ? 'task-list-title task-list-title-done'
+                  : 'task-list-title'
+              }
+            >
+              {task.title}
+            </span>
+            {/* Guarded on the trimmed value, not just on presence: the field is
+                absent from the JSON when it was never set, but a task created
+                before the add-task form trimmed its input can still hold ''. */}
+            {task.description?.trim() && (
+              <p className="task-list-description">{task.description}</p>
+            )}
+          </div>
           {/* `priority` is the Priority union, so this interpolates to one of
               exactly three classes defined in TaskList.css. */}
           <span className={`task-list-priority task-list-priority-${task.priority}`}>

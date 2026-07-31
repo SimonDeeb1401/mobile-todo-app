@@ -27,9 +27,15 @@
   cursor: pointer;
 }
 
-.task-list-title {
+/* Holds the flex: 1 that used to sit on the title, so the badges keep their
+   intrinsic width whether or not there is a description underneath. */
+.task-list-main {
   flex: 1;
   min-width: 0;
+}
+
+.task-list-title {
+  display: block;
   font-size: 16px;
   font-weight: 600;
   color: var(--tm-text);
@@ -40,6 +46,15 @@
 .task-list-title-done {
   text-decoration: line-through;
   color: var(--tm-text-secondary);
+}
+
+/* bodyMedium — the style the mobile card gives its description line. Not
+   line-through on completion: the mobile app only strikes the title. */
+.task-list-description {
+  margin-top: 2px;
+  font-size: 14px;
+  color: var(--tm-text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .task-list-priority {
