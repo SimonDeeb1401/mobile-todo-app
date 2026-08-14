@@ -155,6 +155,40 @@ export function AddTaskIcon() {
   )
 }
 
+// Icons.edit — the pencil that opens the edit screen from a task card.
+export function EditIcon() {
+  return (
+    <svg {...base}>
+      <path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16z" />
+      <line x1="14" y1="6" x2="18" y2="10" />
+    </svg>
+  )
+}
+
+// Icons.edit_note — the 80px header glyph on the edit form. The same list the
+// add-task glyph draws, with a pencil instead of a plus.
+export function EditNoteIcon() {
+  return (
+    <svg {...base}>
+      <line x1="4" y1="6" x2="16" y2="6" />
+      <line x1="4" y1="11" x2="12" y2="11" />
+      <line x1="4" y1="16" x2="9" y2="16" />
+      <path d="M13 20h3l6-6a2.1 2.1 0 0 0-3-3l-6 6z" />
+    </svg>
+  )
+}
+
+// Icons.save — the floppy disk on the edit form's submit button.
+export function SaveIcon() {
+  return (
+    <svg {...base}>
+      <path d="M5 3h11l3 3v15H5z" />
+      <path d="M8 3v6h7V3" />
+      <rect x="8" y="13" width="8" height="6" />
+    </svg>
+  )
+}
+
 // Icons.title — a capital T, for the task title field.
 export function TitleIcon() {
   return (

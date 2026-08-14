@@ -1,0 +1,354 @@
+/* The edit form is the add form with a different badge, a different submit
+   label, and one extra hint line, so the rules below mirror AddTaskPage.css
+   one-for-one under an .edit-task- prefix. That is the convention the pages here
+   already follow — LoginPage.css and SignupPage.css are the same pair — and it
+   keeps each screen's styling reachable from its own file. */
+
+/* Deliberately not a card, unlike .profile-card: the mobile screen lays its
+   fields straight onto AppColors.background, each one wearing
+   AppDecorations.inputFieldDecoration. */
+.edit-task-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--tm-space-lg) var(--tm-space-md) var(--tm-space-xl);
+}
+
+/* Three columns with a phantom third, so .edit-task-heading is centred on the
+   form and not on whatever space the back button leaves behind. */
+.edit-task-header {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  margin-bottom: var(--tm-space-lg);
+}
+
+/* AppDecorations.iconContainerDecoration at IconButton size. */
+.edit-task-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(30, 58, 138, 0.1);
+  color: var(--tm-primary);
+  cursor: pointer;
+}
+
+.edit-task-back:hover {
+  background: rgba(30, 58, 138, 0.18);
+}
+
+/* Explicit, because index.css styles every h2 at 24px/500 with its own margin
+   and letter-spacing. 20px/600 is AppTextStyles.heading3. */
+.edit-task-heading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--tm-text);
+  text-align: center;
+}
+
+.edit-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tm-space-lg);
+  width: 100%;
+  max-width: 560px;
+}
+
+/* The 80px circled edit_note glyph that heads the mobile form. */
+.edit-task-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--tm-space-sm);
+  border-radius: 50%;
+  background: rgba(30, 58, 138, 0.1);
+  color: var(--tm-primary);
+}
+
+.edit-task-badge svg {
+  width: 40px;
+  height: 40px;
+}
+
+.edit-task-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tm-space-sm);
+}
+
+/* bodyLarge at w600 — the mobile field labels. */
+.edit-task-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tm-text);
+}
+
+/* AppDecorations.inputFieldDecoration: white, 15px radius, and the same soft
+   drop shadow the login and profile surfaces use. */
+.edit-task-input-shell {
+  display: flex;
+  align-items: center;
+  gap: var(--tm-space-md);
+  padding: var(--tm-space-md);
+  border-radius: var(--tm-radius-lg);
+  background: var(--tm-surface);
+  box-shadow: 0 5px 15px rgba(158, 158, 158, 0.2);
+}
+
+/* The textarea and the collaborator block stack their rows instead. */
+.edit-task-input-shell-multiline {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.edit-task-input-shell-multiline .edit-task-input-icon {
+  align-self: flex-start;
+}
+
+/* Focus lands on the inner control, but the shadowed shell is what the eye
+   reads as the field, so the ring goes there. :focus-visible on the child would
+   also fire for a mouse click on a <select> in Chrome. */
+.edit-task-input-shell:focus-within {
+  outline: 2px solid var(--tm-primary);
+  outline-offset: 1px;
+}
+
+.edit-task-input-icon {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  color: var(--tm-primary);
+}
+
+/* Set on `color` alone so the flag outline tints without a second rule per
+   priority — matches _getPriorityColor's red / orange / green. */
+.edit-task-flag-high {
+  color: #f44336;
+}
+
+.edit-task-flag-medium {
+  color: #ff9800;
+}
+
+.edit-task-flag-low {
+  color: #4caf50;
+}
+
+/* The controls carry no border, background or padding of their own: the shell
+   provides all three, the way InputBorder.none does on mobile. */
+.edit-task-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--tm-text);
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: normal;
+}
+
+.edit-task-input:focus {
+  outline: none;
+}
+
+.edit-task-input::placeholder {
+  color: var(--tm-text-hint);
+}
+
+.edit-task-textarea {
+  width: 100%;
+  margin-top: var(--tm-space-sm);
+  resize: vertical;
+}
+
+/* Chrome and Safari drop the native chevron with `appearance: none`, so it is
+   redrawn as a background triangle. */
+.edit-task-select {
+  appearance: none;
+  padding-right: var(--tm-space-lg);
+  background-image: linear-gradient(45deg, transparent 50%, var(--tm-text-secondary) 50%),
+    linear-gradient(135deg, var(--tm-text-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 10px) center,
+    calc(100% - 5px) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+/* WebKit gives date inputs an intrinsic width that ignores flex, and hides the
+   picker button until hover. Both are undone here. */
+.edit-task-date {
+  width: 100%;
+  cursor: pointer;
+}
+
+.edit-task-date::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.edit-task-hint {
+  font-size: 12px;
+  color: var(--tm-text-hint);
+}
+
+/* A failed collaborator fetch is not an error the user caused, but it does
+   change what saving will do, so it reads warmer than a plain hint without
+   shouting in --tm-error red. */
+.edit-task-hint-warning {
+  color: #b26a00;
+}
+
+/* The mobile Wrap of Chips. */
+.edit-task-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tm-space-sm);
+  margin: 0 0 var(--tm-space-md);
+  padding: 0;
+  list-style: none;
+}
+
+.edit-task-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 999px;
+  background: rgba(30, 58, 138, 0.08);
+  color: var(--tm-text);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.edit-task-chip-remove {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--tm-text-secondary);
+  cursor: pointer;
+}
+
+.edit-task-chip-remove svg {
+  width: 14px;
+  height: 14px;
+}
+
+.edit-task-chip-remove:hover {
+  color: var(--tm-error);
+}
+
+.edit-task-collaborator-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tm-space-md);
+}
+
+.edit-task-chip-add {
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--tm-primary);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.edit-task-error {
+  color: var(--tm-error);
+  font-size: 14px;
+}
+
+/* AppDecorations.buttonDecoration — primary fill, 15px radius, tinted shadow. */
+.edit-task-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tm-space-sm);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--tm-space-md);
+  border: none;
+  border-radius: var(--tm-radius-lg);
+  background: var(--tm-primary);
+  box-shadow: 0 8px 15px rgba(30, 58, 138, 0.3);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.edit-task-submit:hover:not(:disabled) {
+  background: var(--tm-secondary);
+}
+
+.edit-task-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Same construction as .home-spinner, sized for a button and drawn on the
+   primary fill rather than on the page background. */
+.edit-task-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: edit-task-spin 0.8s linear infinite;
+}
+
+@keyframes edit-task-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edit-task-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* The outlined _buildCancelButton: transparent with a hint-grey border. */
+.edit-task-cancel {
+  width: 100%;
+  min-height: 56px;
+  margin-top: calc(var(--tm-space-lg) * -1 + var(--tm-space-md));
+  padding: var(--tm-space-md);
+  border: 1px solid var(--tm-text-hint);
+  border-radius: var(--tm-radius-lg);
+  background: transparent;
+  color: var(--tm-text-secondary);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.edit-task-cancel:hover {
+  background: rgba(0, 0, 0, 0.04);
+}

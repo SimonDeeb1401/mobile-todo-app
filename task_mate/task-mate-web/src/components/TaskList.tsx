@@ -1,4 +1,5 @@
 import type { Task } from '../services/api'
+import { EditIcon } from './icons'
 import './TaskList.css'
 
 interface TaskListProps {
@@ -9,6 +10,11 @@ interface TaskListProps {
   // and on whether a search is running, both of which only HomePage knows.
   emptyMessage: string
   onToggleComplete?: (task: Task) => void
+  // Opens the edit form for one card. Shown on every task: PATCH /tasks/:id is
+  // owner-only, but nothing in the task JSON identifies the current user, so
+  // the form reports the 404 rather than the card hiding a button it cannot
+  // know is unusable.
+  onEditTask?: (task: Task) => void
 }
 
 // The only date formatting in the app. The mobile app renders
@@ -25,7 +31,7 @@ function formatDeadline(deadline: string): string {
   return `${date.getFullYear()}-${month}-${day}`
 }
 
-function TaskList({ tasks, emptyMessage, onToggleComplete }: TaskListProps) {
+function TaskList({ tasks, emptyMessage, onToggleComplete, onEditTask }: TaskListProps) {
   if (tasks.length === 0) {
     return <p className="task-list-empty">{emptyMessage}</p>
   }
@@ -68,6 +74,16 @@ function TaskList({ tasks, emptyMessage, onToggleComplete }: TaskListProps) {
             {task.priority}
           </span>
           <span className="task-list-deadline">{formatDeadline(task.deadline)}</span>
+          {/* Last in the row so the card still reads title → priority →
+              deadline, with the one action anchored at its trailing edge. */}
+          <button
+            type="button"
+            className="task-list-edit"
+            aria-label={`Edit ${task.title}`}
+            onClick={() => onEditTask?.(task)}
+          >
+            <EditIcon />
+          </button>
         </li>
       ))}
     </ul>

@@ -7,6 +7,7 @@ import type { TabKey } from './TaskTabs'
 import TaskList from './TaskList'
 import AddTaskButton from './AddTaskButton'
 import AddTaskPage from './AddTaskPage'
+import EditTaskPage from './EditTaskPage'
 import ProfilePage from './ProfilePage'
 import './HomePage.css'
 
@@ -57,12 +58,27 @@ function emptyMessageFor(tab: TabKey, searching: boolean): string {
   return 'No shared tasks available.'
 }
 
+// Which tab a task lands in, matching the three-way split in the useMemo below:
+// collaborators win over completion, so a finished shared task is Shared.
+// Used to follow a task after it is created or edited, instead of leaving the
+// user on a tab the task just left.
+function tabFor(task: Task): TabKey {
+  if ((task.collaborators?.length ?? 0) > 0) {
+    return 'shared'
+  }
+  return task.completed ? 'completed' : 'pending'
+}
+
 function HomePage({ onSignOut }: HomePageProps) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [view, setView] = useState<'tasks' | 'profile' | 'addTask'>('tasks')
+  const [view, setView] = useState<'tasks' | 'profile' | 'addTask' | 'editTask'>('tasks')
   const [activeTab, setActiveTab] = useState<TabKey>('pending')
+  // The card the edit form is open on. Held as the row itself rather than an id
+  // so the form prefills from what the list already has, with no second fetch;
+  // it is also what keys the form, so switching cards remounts it.
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
   // The mobile add-task screen confirms with a green SnackBar before popping.
   // This is that message; the effect below clears it.
   const [notice, setNotice] = useState('')
@@ -172,11 +188,35 @@ function HomePage({ onSignOut }: HomePageProps) {
   const handleTaskCreated = (task: Task) => {
     setTasks((current) => [...current, task])
     // A new task is never completed, so it lands under Pending — unless it has
-    // collaborators, which puts it under Shared regardless (the same split the
-    // useMemo above applies). Following it means the user always sees the task
-    // they just created instead of an unchanged list.
-    setActiveTab((task.collaborators?.length ?? 0) > 0 ? 'shared' : 'pending')
+    // collaborators, which puts it under Shared regardless. Following it means
+    // the user always sees the task they just created instead of an unchanged
+    // list.
+    setActiveTab(tabFor(task))
     setNotice('Task created successfully!')
+    setView('tasks')
+  }
+
+  const handleEditTask = (task: Task) => {
+    setNotice('')
+    setEditingTask(task)
+    setView('editTask')
+  }
+
+  const handleTaskSaved = (task: Task) => {
+    // The server's row, so a field the controller also touched lands too — and
+    // so `collaborators` comes back as the resolved ids the split reads, not the
+    // emails the form submitted.
+    setTasks((current) => current.map((item) => (item._id === task._id ? task : item)))
+    // Adding or clearing collaborators moves a task between tabs, so follow it
+    // for the same reason a newly created one is followed.
+    setActiveTab(tabFor(task))
+    setNotice('Task updated successfully!')
+    setEditingTask(null)
+    setView('tasks')
+  }
+
+  const handleCancelEdit = () => {
+    setEditingTask(null)
     setView('tasks')
   }
 
@@ -245,6 +285,7 @@ function HomePage({ onSignOut }: HomePageProps) {
         tasks={activeTasks}
         emptyMessage={emptyMessageFor(activeTab, search !== '')}
         onToggleComplete={handleToggleComplete}
+        onEditTask={handleEditTask}
       />
     )
   }
@@ -279,6 +320,16 @@ function HomePage({ onSignOut }: HomePageProps) {
         <AddTaskPage
           onCreated={handleTaskCreated}
           onCancel={() => setView('tasks')}
+        />
+      ) : view === 'editTask' && editingTask ? (
+        // Keyed by task id so the form's prefilled state is rebuilt when the
+        // user edits a different card, rather than a stale title surviving into
+        // the next task's form.
+        <EditTaskPage
+          key={editingTask._id}
+          task={editingTask}
+          onSaved={handleTaskSaved}
+          onCancel={handleCancelEdit}
         />
       ) : (
         <>
