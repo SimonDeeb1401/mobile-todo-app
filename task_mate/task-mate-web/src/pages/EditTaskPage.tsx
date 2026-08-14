@@ -17,7 +17,7 @@ import {
   PersonAddIcon,
   SaveIcon,
   TitleIcon,
-} from './icons'
+} from '../components/icons'
 import './EditTaskPage.css'
 
 // Web port of lib/screens/edit_tasks.dart — same field order, same validation

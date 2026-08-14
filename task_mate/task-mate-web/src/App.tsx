@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import HomePage from './components/HomePage'
+import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import { isLoggedIn, logout } from './services/api'

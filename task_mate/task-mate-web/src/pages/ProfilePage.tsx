@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { UserProfile } from '../services/api'
 import { ApiError, NetworkError, getUserProfile } from '../services/api'
-import { LogoutIcon, PersonIcon } from './icons'
+import { LogoutIcon, PersonIcon } from '../components/icons'
 import './ProfilePage.css'
 
 interface ProfilePageProps {

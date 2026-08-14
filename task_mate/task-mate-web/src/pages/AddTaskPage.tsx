@@ -12,7 +12,7 @@ import {
   PersonAddIcon,
   PlusIcon,
   TitleIcon,
-} from './icons'
+} from '../components/icons'
 import './AddTaskPage.css'
 
 // Web port of lib/screens/add_task.dart — same field order, same validation
